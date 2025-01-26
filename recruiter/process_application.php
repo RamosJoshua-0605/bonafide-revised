@@ -1,0 +1,283 @@
+<?php
+require 'db.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $application_id = $_POST['application_id'];
+    $action = $_POST['action']; // Determines the stage of processing: reject, interview, offer, or deploy
+    $remarks = $_POST['remarks'] ?? null;
+
+    try {
+        // Fetch application details
+        $query = $pdo->prepare("
+            SELECT job_post_id, status, applied_at 
+            FROM job_applications 
+            WHERE application_id = :application_id
+        ");
+        $query->execute(['application_id' => $application_id]);
+        $application = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$application) {
+            throw new Exception("Application not found.");
+        }
+
+        $job_post_id = $application['job_post_id'];
+        $status = $application['status'];
+        $applied_at = $application['applied_at'];
+
+        // Handle each action
+        if ($action === 'reject') {
+            $reject_remarks = $_POST['reject_remarks'] ?? null; // Get the rejection remarks
+
+            // Update application as rejected
+            $query = $pdo->prepare("
+                UPDATE job_applications 
+                SET status = 'Rejected', rejected_at = NOW(), screened_at = NOW(), 
+                    duration_applied_to_screened = TIMESTAMPDIFF(HOUR, :applied_at, NOW()), 
+                    total_duration = TIMESTAMPDIFF(HOUR, :applied_at, NOW()), 
+                    comments = :remarks 
+                WHERE application_id = :application_id
+            ");
+            $query->execute([
+                'applied_at' => $applied_at,
+                'remarks' => $reject_remarks,
+                'application_id' => $application_id
+            ]);
+            
+            // Update metrics including dropout rate
+            $metricsQuery = $pdo->prepare("
+                UPDATE job_metrics 
+                SET 
+                    rejected_applicants = rejected_applicants + 1, 
+                    dropout_rate = (rejected_applicants + 1) / total_applicants * 100
+                WHERE job_post_id = :job_post_id
+            ");
+            $metricsQuery->execute(['job_post_id' => $job_post_id]);            
+        } elseif ($action === 'interview') {
+            try {
+                // Schedule interview
+                $interview_type = $_POST['interview_type'];
+                $interview_date = $_POST['interview_date'];
+                $meeting_link = $_POST['meeting_link'] ?? null;
+                $recruiter_email = $_POST['recruiter_email'];
+                $interview_time = $_POST['interview_time'];
+        
+                // Check if an interview already exists for this application_id
+                $checkQuery = $pdo->prepare("
+                    SELECT COUNT(*) 
+                    FROM interview_details 
+                    WHERE application_id = :application_id
+                ");
+                $checkQuery->execute(['application_id' => $application_id]);
+                $exists = $checkQuery->fetchColumn();
+        
+                if ($exists) {
+                    // Update the existing interview record
+                    $query = $pdo->prepare("
+                        UPDATE interview_details 
+                        SET meeting_type = :interview_type, 
+                            interview_date = :interview_date, 
+                            meeting_link = :meeting_link, 
+                            recruiter_email = :recruiter_email, 
+                            interview_time = :interview_time, 
+                            remarks = :remarks 
+                        WHERE application_id = :application_id
+                    ");
+                } else {
+                    // Insert a new interview record
+                    $query = $pdo->prepare("
+                        INSERT INTO interview_details 
+                        (application_id, meeting_type, interview_date, meeting_link, recruiter_email, interview_time, remarks) 
+                        VALUES (:application_id, :interview_type, :interview_date, :meeting_link, :recruiter_email, :interview_time, :remarks)
+                    ");
+                }
+        
+                // Execute the insert or update query
+                $query->execute([
+                    'application_id' => $application_id,
+                    'interview_type' => $interview_type,
+                    'interview_date' => $interview_date,
+                    'meeting_link' => $meeting_link,
+                    'recruiter_email' => $recruiter_email,
+                    'interview_time' => $interview_time,
+                    'remarks' => $remarks
+                ]);
+        
+                // Fetch job_post_id and applied_at from the job_applications table
+                $fetchJobDetails = $pdo->prepare("
+                    SELECT job_post_id, applied_at 
+                    FROM job_applications 
+                    WHERE application_id = :application_id
+                ");
+                $fetchJobDetails->execute(['application_id' => $application_id]);
+                $jobDetails = $fetchJobDetails->fetch(PDO::FETCH_ASSOC);
+        
+                if (!$jobDetails) {
+                    throw new Exception("Job application not found for ID: $application_id.");
+                }
+        
+                $job_post_id = $jobDetails['job_post_id'];
+                $applied_at = $jobDetails['applied_at'];
+        
+                // Update application status
+                $query = $pdo->prepare("
+                    UPDATE job_applications 
+                    SET status = 'Interviewed', 
+                        screened_at = NOW(), 
+                        duration_applied_to_screened = TIMESTAMPDIFF(HOUR, :applied_at, NOW()) 
+                    WHERE application_id = :application_id
+                ");
+                $query->execute([
+                    'applied_at' => $applied_at,
+                    'application_id' => $application_id
+                ]);
+        
+                // Update metrics
+                $metricsQuery = $pdo->prepare("
+                    UPDATE job_metrics 
+                    SET interviewed_applicants = interviewed_applicants + 1,
+                        screened_applicants = screened_applicants + 1 
+                    WHERE job_post_id = :job_post_id
+                ");
+                $metricsQuery->execute(['job_post_id' => $job_post_id]);
+        
+                // Optionally log success or redirect
+                header("Location: view_application_details.php?application_id=$application_id&success=1");
+                exit();
+            } catch (Exception $e) {
+                echo "Error: " . $e->getMessage();
+                exit();
+            }        
+        } elseif ($action === 'offer') {
+            $remarks_offer = $_POST['remarks_offer'] ?? null; // Get the rejection remarks
+            // Make an offer
+            $salary = $_POST['salary'];
+            $start_date = $_POST['start_date'];
+            $benefits = $_POST['benefits'];
+
+            // Insert offer details
+            $query = $pdo->prepare("
+                INSERT INTO offer_details 
+                (application_id, salary, start_date, benefits, remarks) 
+                VALUES (:application_id, :salary, :start_date, :benefits, :remarks)
+            ");
+            $query->execute([
+                'application_id' => $application_id,
+                'salary' => $salary,
+                'start_date' => $start_date,
+                'benefits' => $benefits,
+                'remarks' => $remarks_offer
+            ]);
+
+            // Update application status
+            $query = $pdo->prepare("
+                UPDATE job_applications 
+                SET status = 'Offered', offered_at = NOW(), 
+                    duration_interviewed_to_offered = TIMESTAMPDIFF(HOUR, screened_at, NOW()) 
+                WHERE application_id = :application_id
+            ");
+            $query->execute(['application_id' => $application_id]);
+
+            // Update metrics
+            $metricsQuery = $pdo->prepare("
+                UPDATE job_metrics 
+                SET offered_applicants = offered_applicants + 1 
+                WHERE job_post_id = :job_post_id
+            ");
+            $metricsQuery->execute(['job_post_id' => $job_post_id]);
+
+        } elseif ($action === 'deploy') {
+            // Deploy the applicant
+            $deployment_remarks = $_POST['deployment_remarks'] ?? null; // Get the rejection remarks
+
+            $deployment_date = $_POST['deployment_date'];
+        
+            // Insert deployment details
+            $query = $pdo->prepare("
+                INSERT INTO deployment_details 
+                (application_id, deployment_date, remarks) 
+                VALUES (:application_id, :deployment_date, :remarks)
+            ");
+            $query->execute([
+                'application_id' => $application_id,
+                'deployment_date' => $deployment_date,
+                'remarks' => $deployment_remarks
+            ]);
+        
+            // Update application status
+            $query = $pdo->prepare("
+                UPDATE job_applications 
+                SET status = 'Hired', deployed_at = NOW(), 
+                    duration_offered_to_hired = TIMESTAMPDIFF(HOUR, offered_at, NOW()), 
+                    total_duration = TIMESTAMPDIFF(HOUR, applied_at, NOW()) 
+                WHERE application_id = :application_id
+            ");
+            $query->execute(['application_id' => $application_id]);
+        
+            // Fetch required data for metrics calculations
+            $query = $pdo->prepare("
+                SELECT 
+                    COUNT(*) AS total_applicants,
+                    SUM(CASE WHEN status = 'Hired' THEN 1 ELSE 0 END) AS successful_placements,
+                    SUM(CASE WHEN status = 'Withdrawn' THEN 1 ELSE 0 END) AS withdrawn_applicants,
+                    SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) AS rejected_applicants,
+                    jm.referral_applicants,
+                    jm.social_media_applicants,
+                    jm.career_site_applicants
+                FROM job_applications ja
+                JOIN job_metrics jm ON ja.job_post_id = jm.job_post_id
+                WHERE ja.job_post_id = :job_post_id
+            ");
+            $query->execute(['job_post_id' => $job_post_id]);
+            $metrics = $query->fetch(PDO::FETCH_ASSOC);
+        
+            $total_applicants = $metrics['total_applicants'];
+            $successful_placements = $metrics['successful_placements'];
+            $withdrawn_applicants = $metrics['withdrawn_applicants'];
+            $rejected_applicants = $metrics['rejected_applicants'];
+            $referral_applicants = $metrics['referral_applicants'];
+            $social_media_applicants = $metrics['social_media_applicants'];
+            $career_site_applicants = $metrics['career_site_applicants'];
+        
+            // Calculate additional metrics
+            $applicant_to_hire_ratio = ($total_applicants > 0) ? ($successful_placements / $total_applicants) * 100 : 0;
+            $dropout_rate = ($total_applicants > 0) ? (($withdrawn_applicants + $rejected_applicants) / $total_applicants) * 100 : 0;
+            $referral_success_rate = ($referral_applicants > 0) ? ($successful_placements / $referral_applicants) * 100 : 0;
+            $social_media_success_rate = ($social_media_applicants > 0) ? ($successful_placements / $social_media_applicants) * 100 : 0;
+            $career_site_success_rate = ($career_site_applicants > 0) ? ($successful_placements / $career_site_applicants) * 100 : 0;
+        
+            // Update metrics
+            $metricsQuery = $pdo->prepare("
+                UPDATE job_metrics 
+                SET 
+                    successful_placements = :successful_placements,
+                    applicant_to_hire_ratio = :applicant_to_hire_ratio,
+                    dropout_rate = :dropout_rate,
+                    referral_success_rate = :referral_success_rate,
+                    social_media_success_rate = :social_media_success_rate,
+                    career_site_success_rate = :career_site_success_rate
+                WHERE job_post_id = :job_post_id
+            ");
+            $metricsQuery->execute([
+                'successful_placements' => $successful_placements,
+                'applicant_to_hire_ratio' => $applicant_to_hire_ratio,
+                'dropout_rate' => $dropout_rate,
+                'referral_success_rate' => $referral_success_rate,
+                'social_media_success_rate' => $social_media_success_rate,
+                'career_site_success_rate' => $career_site_success_rate,
+                'job_post_id' => $job_post_id
+            ]);
+        } else {
+            throw new Exception("Invalid action.");
+        }        
+
+        // Redirect with success
+        header("Location: view_application_details.php?application_id=$application_id&success=1");
+        exit();
+
+    } catch (Exception $e) {
+        // Handle errors
+        echo "Error: " . $e->getMessage();
+        exit();
+    }
+}
+?>
