@@ -1,7 +1,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
 
-<div class="d-flex flex-column bg-light position-fixed" id="sidebar" style="width: 200px; height: 100vh; transition: all 0.3s;">
+<div class="d-flex flex-column bg-light position-fixed" id="sidebar" style="width: 200px; height: 100vh; transition: all 0.3s; top: 60px;">
     <div class="d-flex justify-content-center py-2">
         <button id="toggleSidebar" class="btn btn-sm" 
             style="position: absolute; left: 15px; top: 20px; width: 40px; height: 40px; font-size: 2.0rem;">≡</button>
@@ -56,16 +56,20 @@
     const tooltips = Array.from(collapsedTooltips).map(el => new bootstrap.Tooltip(el));
 
     toggleSidebar.addEventListener('click', function () {
+        const content = document.getElementById('content'); // Added content reference
+
         if (sidebar.style.width === '70px') {
             sidebar.style.width = '200px';
             menuTexts.forEach(text => text.style.display = 'inline');
             sidebar.classList.remove('collapsed');
             tooltips.forEach(tooltip => tooltip.disable());
+            content.style.marginLeft = '200px'; // Added this line to adjust content
         } else {
             sidebar.style.width = '70px';
             menuTexts.forEach(text => text.style.display = 'none');
             sidebar.classList.add('collapsed');
             tooltips.forEach(tooltip => tooltip.enable());
+            content.style.marginLeft = '70px'; // Added this line to adjust content
         }
     });
 
@@ -92,6 +96,7 @@
     #sidebar {
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        z-index: 1000;
     }
 
     #sidebar ul li a {
@@ -147,5 +152,34 @@
     /* Sidebar spacing adjustments */
     .d-flex.justify-content-center.py-2 {
         margin-top: 10px;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #content {
+        margin-left: 200px;
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+    }
+
+    #sidebar.collapsed + #content {
+        margin-left: 70px;
+    }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            width: 70px;
+        }
+
+        .menu-text {
+            display: none;
+        }
+
+        #content {
+            margin-left: 70px;
+        }
     }
 </style>

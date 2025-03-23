@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Redirect if the user is not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -132,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
+<div id='content'>
 <div class="container mt-5">
     <h2>Educational Information</h2>
     <?php if (isset($success_message)): ?>
@@ -202,6 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn btn-primary mt-3">Save</button>
     </form>
 </div>
+    </div>
 
 <script>
 $(document).ready(function () {

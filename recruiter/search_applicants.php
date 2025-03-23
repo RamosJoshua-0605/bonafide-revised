@@ -10,7 +10,7 @@ $error = '';
 // Capture query and pagination parameters
 $query = isset($_GET['q']) ? trim($_GET['q']) : '';
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$limit = 20; // Number of applicants per page
+$limit = 15; // Number of applicants per page
 $offset = ($page - 1) * $limit;
 
 // Query to fetch matching applicants with pagination
@@ -162,6 +162,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_applicants']
         <p> <?php echo $error?> </p>
     </div>
 
+            <!-- Trigger Modal -->
+        <button type="button" class="btn btn-success mt-3" id="openModalButton" data-bs-toggle="modal" data-bs-target="#emailModal">Send Email</button><br>
+
+
     <!-- Applicants List -->
     <?php if (count($applicants) > 0): ?>
     <form id="applicantsForm" method="POST" action="search_applicants.php" enctype="multipart/form-data">
@@ -301,9 +305,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_applicants']
             </div>
         </div>
 </form>
-        <!-- Trigger Modal -->
-        <button type="button" class="btn btn-success mt-3" id="openModalButton" data-bs-toggle="modal" data-bs-target="#emailModal">Send Email</button>
-
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
             <nav>

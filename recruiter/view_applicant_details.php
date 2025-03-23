@@ -1,5 +1,7 @@
 <?php
 require 'db.php'; // Include database connection
+require 'sidebar.php';
+require 'header.php';
 
 // Fetch user_id from query parameter
 $user_id = $_GET['user_id'] ?? null;
@@ -59,7 +61,11 @@ $base_path = '../applicant/';
     </style>
 </head>
 <body>
+<div id='content'>
 <div class="container mt-5">
+    <div class="mb-3">
+        <a href="user_management.php">Back to Applicants</a>
+    </div>
     <h1>Applicant Details</h1>
     <div class="card mb-4">
         <div class="card-header">Personal Information</div>
@@ -126,5 +132,6 @@ $base_path = '../applicant/';
         </div>
     <?php endif; ?>
 </div>
+                </div>
 </body>
 </html>

@@ -1,5 +1,9 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
+
+$successMessage = ""; // Initialize the message variable
 
 if (!isset($_GET['job_post_id']) || empty($_GET['job_post_id'])) {
     die("Job post ID is required.");
@@ -152,7 +156,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Error updating metrics: " . $e->getMessage();
         }
  
-    echo "<div class='alert alert-success'>Application submitted successfully!</div>";
+        // Store success message
+    $successMessage = "<div class='alert alert-success'>Application submitted successfully! You will be redirected shortly</div>";
+
+    // Redirect after 3 seconds using JavaScript
+    echo "<script>
+        setTimeout(function() {
+            window.location.href = 'job_posts.php';
+        }, 3000);
+    </script>";
 }
 
 ?>
@@ -165,7 +177,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div id='content'>
 <div class="container mt-5">
+    <div class="mb-3">
+            <a href="job_posts.php">Back to Job Posts</a>
+    </div>
+
+    <!-- Display the success message inside the container -->
+    <?= $successMessage ?>
+    
     <h1 class="mb-4">Apply for <?= htmlspecialchars($jobDetails['job_title']) ?></h1>
     <div class="card mb-4">
         <div class="card-body">
@@ -237,5 +257,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn btn-primary">Submit Application</button>
     </form>
 </div>
+            </div>
 </body>
 </html>

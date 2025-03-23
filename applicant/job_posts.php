@@ -1,5 +1,7 @@
 <?php 
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Fetch all open job posts
 $sql = "SELECT * FROM job_posts WHERE status = 'open'";
@@ -27,6 +29,7 @@ $jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
+    <div id='content'>
     <div class="container mt-5">
         <h1 class="mb-4">Available Job Posts</h1>
 
@@ -84,6 +87,7 @@ $jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="alert alert-info">No open job posts available at the moment.</div>
             <?php endif; ?>
         </div>
+    </div>
     </div>
 
     <script>

@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -13,28 +15,30 @@ require 'db.php';
 
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Applicant Profiles</h1>
+<div id="content">
+    <div class="container mt-5">
+        <h1 class="mb-4">Applicant Profiles</h1>
 
-    <!-- Search Bar -->
-    <div class="mb-4">
-        <input type="text" id="search" class="form-control" placeholder="Search applicants by name, email, or phone number">
-    </div>
-
-    <?php
-    $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
-    if ($message): ?>
-        <div class="alert alert-success">
-            <?= $message ?>
+        <!-- Search Bar -->
+        <div class="mb-4">
+            <input type="text" id="search" class="form-control" placeholder="Search applicants by name, email, or phone number">
         </div>
-    <?php endif; ?>
 
-    <!-- <button type="button" class="btn btn-success mt-3" id="openModalButton" data-bs-toggle="modal" data-bs-target="#emailModal">Send Email</button> -->
+        <?php
+        $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
+        if ($message): ?>
+            <div class="alert alert-success">
+                <?= $message ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- <button type="button" class="btn btn-success mt-3" id="openModalButton" data-bs-toggle="modal" data-bs-target="#emailModal">Send Email</button> -->
 
 
-    <!-- Applicants Container -->
-    <div id="applicants-container">
-        <!-- Applicant cards will be loaded here dynamically -->
+        <!-- Applicants Container -->
+        <div id="applicants-container">
+            <!-- Applicant cards will be loaded here dynamically -->
+        </div>
     </div>
 </div>
 

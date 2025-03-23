@@ -1,5 +1,7 @@
 <?php
 require 'db.php'; // Include database connection
+include 'header.php';
+include 'sidebar.php';
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -77,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+<div id='content'>
     <div class="container mt-5">
         <h2>Add Certifications</h2>
         <form id="certificationForm" action="" method="POST">
@@ -105,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="experience.php" class="btn btn-secondary">Skip</a>
             <div class="mt-3 text-danger" id="errorMessage" style="display: none;">Please add at least one certification before submitting.</div>
         </form>
+    </div>
     </div>
 
 <script>

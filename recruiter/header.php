@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-<header class="bg-primary text-white py-3">
+<header class="bg-primary text-white py-3 fixed-top">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <h1 class="h5 mb-0">Bonafide Placement Trainology Placement Services</h1>
         <div class="d-flex align-items-center">
@@ -28,5 +28,33 @@
         </div>
     </div>
 </header>
+
+<style>
+    body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; /* Ensures full height */
+}
+
+#content {
+    margin-left: 200px;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+    margin-top: 20px; /* Prevents overlap with header */
+    padding-bottom: 60px; /* Adds bottom spacing */
+}
+
+#sidebar.collapsed + #content {
+    margin-left: 70px;
+}
+
+@media (max-width: 768px) {
+    #content {
+        margin-left: 70px;
+        margin-top: 20px;
+        padding-bottom: 60px; /* Maintain bottom spacing on small screens */
+    }
+}
+</style>
 </body>
 </html>

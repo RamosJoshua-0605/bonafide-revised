@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Redirect if the user is not logged in or if `user_id` is already set
 if (!isset($_SESSION['login_id']) || isset($_SESSION['user_id'])) {
@@ -185,6 +187,7 @@ error_log("Session Data: " . print_r($_SESSION, true));
     </style>
 </head>
 <body>
+<div id='content'>
 <div class="container mt-5">
     <h2>Profile Setup</h2>
     <form method="POST" action="" enctype="multipart/form-data" id="profileForm" novalidate>
@@ -348,6 +351,7 @@ error_log("Session Data: " . print_r($_SESSION, true));
 
     </form>
 </div>
+    </div>
 
 <script src="ph-address-selector.js"></script>
 

@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Constants
 $itemsPerPage = 5;
@@ -63,26 +65,29 @@ function calculateScore($user, $jobPost, $answers) {
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Job Applications</h1>
+<div id="content">
+    <div class="container mt-5">
+        <h1 class="mb-4">Job Applications</h1>
 
-    <!-- Job Posts -->
-    <?php foreach ($jobDetails as $job): ?>
-        <div class="card mb-3">
-            <div class="card-header">
-                <h2>
-                    <?= htmlspecialchars($job['job_title']) ?>
-                    <span class="badge bg-secondary badge-small"><?= $job['application_count'] ?> Applications</span>                    <button class="btn btn-link float-end" data-bs-toggle="collapse" data-bs-target="#job-<?= $job['job_post_id'] ?>">Toggle</button>
-                </h2>
-            </div>
-            <div id="job-<?= $job['job_post_id'] ?>" class="collapse">
-                <div class="card-body">
-                    <div id="applications-container-<?= $job['job_post_id'] ?>"></div>
-                    <div id="pagination-container-<?= $job['job_post_id'] ?>" class="pagination-container mt-3"></div>
+        <!-- Job Posts -->
+        <?php foreach ($jobDetails as $job): ?>
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2>
+                        <?= htmlspecialchars($job['job_title']) ?>
+                        <span class="badge bg-secondary badge-small"><?= $job['application_count'] ?> Applications</span>                    
+                        <button class="btn btn-link float-end" data-bs-toggle="collapse" data-bs-target="#job-<?= $job['job_post_id'] ?>" aria-expanded="false" aria-controls="job-<?= $job['job_post_id'] ?>">Toggle</button>
+                    </h2>
+                </div>
+                <div id="job-<?= $job['job_post_id'] ?>" class="collapse">
+                    <div class="card-body">
+                        <div id="applications-container-<?= $job['job_post_id'] ?>"></div>
+                        <div id="pagination-container-<?= $job['job_post_id'] ?>" class="pagination-container mt-3"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
+    </div>
 </div>
 
 <script>

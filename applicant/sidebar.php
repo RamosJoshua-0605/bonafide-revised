@@ -79,8 +79,10 @@
 
 <style>
     #sidebar {
+        margin-top: 50px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        z-index: 1000;
     }
 
     #sidebar ul li a {
@@ -136,5 +138,34 @@
     /* Sidebar spacing adjustments */
     .d-flex.justify-content-center.py-2 {
         margin-top: 10px;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #content {
+        margin-left: 200px;
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+    }
+
+    #sidebar.collapsed + #content {
+        margin-left: 70px;
+    }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            width: 70px;
+        }
+
+        .menu-text {
+            display: none;
+        }
+
+        #content {
+            margin-left: 70px;
+        }
     }
 </style>

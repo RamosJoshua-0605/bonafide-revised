@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Get application_id from the URL
 $application_id = $_GET['application_id'] ?? null;
@@ -61,6 +63,34 @@ $questionnaire_query = $pdo->prepare("
 ");
 $questionnaire_query->execute(['application_id' => $application_id]);
 $questionnaire_answers = $questionnaire_query->fetchAll(PDO::FETCH_ASSOC);
+
+$job_requirements_query = $pdo->prepare("
+    SELECT requirement_name FROM job_requirements WHERE job_post_id = :job_post_id
+");
+$job_requirements_query->execute(['job_post_id' => $application['job_post_id']]);
+$job_requirements = $job_requirements_query->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch checked requirements
+$checked_requirements_query = $pdo->prepare("
+    SELECT * FROM checked_requirements WHERE application_id = :application_id
+");
+$checked_requirements_query->execute(['application_id' => $application_id]);
+$checked_requirements = array_column($checked_requirements_query->fetchAll(PDO::FETCH_ASSOC), 'requirement');
+
+// Fetch interview details
+$interview_query = $pdo->prepare("SELECT * FROM interview_details WHERE application_id = :application_id");
+$interview_query->execute(['application_id' => $application_id]);
+$interview = $interview_query->fetch(PDO::FETCH_ASSOC);
+
+// Fetch offer details
+$offer_query = $pdo->prepare("SELECT * FROM offer_details WHERE application_id = :application_id");
+$offer_query->execute(['application_id' => $application_id]);
+$offer = $offer_query->fetch(PDO::FETCH_ASSOC);
+
+// Fetch deployment details
+$deployment_query = $pdo->prepare("SELECT * FROM deployment_details WHERE application_id = :application_id");
+$deployment_query->execute(['application_id' => $application_id]);
+$deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +107,11 @@ $questionnaire_answers = $questionnaire_query->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
+<div id="content">
 <div class="container mt-5">
+    <div class="mb-3">
+        <a href="applications.php">Back to Applications</a>
+    </div>
     <h1>Application Details</h1>
    
     <!-- Job Application -->
@@ -121,6 +155,34 @@ $questionnaire_answers = $questionnaire_query->fetchAll(PDO::FETCH_ASSOC);
             <p><strong>COVID-19 Vaccination:</strong> <?= htmlspecialchars($application['covid_vaccination_status']) ?></p>
         </div>
     </div>
+
+    <div class="card mb-4">
+    <div class="card-header">Job Requirements Checklist</div>
+    <div class="card-body">
+        <form id="requirements-form" method="post" action="save_requirements.php">
+            <input type="hidden" name="application_id" value="<?= htmlspecialchars($application['application_id']) ?>">
+
+            <?php foreach ($job_requirements as $req): ?>
+                <?php 
+                    $isChecked = in_array($req['requirement_name'], $checked_requirements);
+                ?>
+                <div class="form-check">
+                    <input 
+                        type="checkbox" 
+                        name="requirements[]" 
+                        value="<?= htmlspecialchars($req['requirement_name']) ?>" 
+                        class="form-check-input requirement-checkbox"
+                        <?= $isChecked ? 'checked' : '' ?>
+                        onchange="document.getElementById('requirements-form').submit();"
+                    >
+                    <label class="form-check-label"><?= htmlspecialchars($req['requirement_name']) ?></label>
+                </div>
+            <?php endforeach; ?>
+        </form>
+    </div>
+</div>
+
+
 
     <!-- Work Experience -->
     <?php if ($work_experiences): ?>
@@ -174,10 +236,52 @@ $questionnaire_answers = $questionnaire_query->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Process Application -->
 <div class="card mb-4">
+    
     <div class="card-header">Process Application</div>
     <div class="card-body">
         <form method="post" action="process_application.php">
             <input type="hidden" name="application_id" value="<?= htmlspecialchars($application['application_id']) ?>">
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Current Status:</strong></label>
+                <p id="current-status" class="form-control-static"><?= htmlspecialchars($application['status']) ?></p>
+            </div>
+
+            <!-- Interview Details -->
+            <?php if ($interview): ?>
+                <div class="card mb-4">
+                    <div class="card-header">Interview Details</div>
+                    <div class="card-body">
+                        <p><strong>Meeting Type:</strong> <?= htmlspecialchars($interview['meeting_type']) ?></p>
+                        <p><strong>Interview Date:</strong> <?= date("M d, Y", strtotime($interview['interview_date'])) ?></p>
+                        <p><strong>Interview Notes:</strong> <?= htmlspecialchars($interview['remarks']) ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Offer Details -->
+            <?php if ($offer): ?>
+                <div class="card mb-4">
+                    <div class="card-header">Job Offer</div>
+                    <div class="card-body">
+                        <p><strong>Salary Offered:</strong> ₱<?= htmlspecialchars($offer['salary']) ?></p>
+                        <p><strong>Start Date:</strong> <?= date("M d, Y", strtotime($offer['start_date'])) ?></p>
+                        <p><strong>Additional Benefits:</strong> <?= htmlspecialchars($offer['benefits']) ?></p>
+                        <p><strong>Offer Status:</strong> <?= htmlspecialchars($offer['remarks']) ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Deployment Details -->
+            <?php if ($deployment): ?>
+                <div class="card mb-4">
+                    <div class="card-header">Deployment Details</div>
+                    <div class="card-body">
+                        <p><strong>Deployment Date:</strong> <?= date("M d, Y", strtotime($deployment['deployment_date'])) ?></p>
+                        <p><strong>Additional Notes:</strong> <?= htmlspecialchars($deployment['remarks']) ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <!-- Status Selection -->
             <div class="mb-3">
@@ -266,7 +370,7 @@ $questionnaire_answers = $questionnaire_query->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 </div>
-
+                    </div>
 <script>
     // Select required DOM elements
     const statusField = document.getElementById('action');

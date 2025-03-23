@@ -1,7 +1,9 @@
 <?php
 require 'db.php'; // Include database connection
+require 'header.php';
+require 'sidebar.php';
 
-// Redirect if not logged in
+//  Redirect if not logged in
 if (!isset($_SESSION['login_id'])) {
     header("Location: index.php");
     exit;
@@ -184,7 +186,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+    <div id='content'>
 <div class="container mt-5">
+    <div class="mb-3">
+            <a href="view_jobs.php">Back to Job Posts</a>
+    </div>
+
     <h2>Edit Job Post</h2>
 
     <!-- Display success or error messages -->
@@ -373,6 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
 </div>
+                    </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

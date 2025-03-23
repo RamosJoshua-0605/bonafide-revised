@@ -1,12 +1,13 @@
 <?php
+ob_start();
 require 'db.php'; // Include database connection
 
-// include 'header.php';
-// include 'sidebar.php';
+include 'header.php';
+include 'sidebar.php';
 
 // Start session to get logged-in user's ID
 if (!isset($_SESSION['login_id'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -43,10 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Requirements and questions
     $requirements = $_POST['requirements'] ?? [];
     $questions = $_POST['questions'] ?? [];
-
-    // debug
-    // print_r($questions);
-    // exit;
 
     // Validate inputs
     if (empty($job_title) || empty($partner_company) || empty($location) || empty($description)) {
@@ -189,7 +186,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+
+<div id='content'>
 <div class="container mt-5">
+    <div class="mb-3">
+            <a href="view_jobs.php">Back to Job Posts</a>
+    </div>
     <h2>Create Job Post</h2>
 
     <!-- Display success or error messages -->
@@ -341,21 +343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3" id="questionsSection" style="display: none;">
             <label for="questions" class="form-label">Questions</label>
             <div id="questionContainer">
-                <!-- <div class="question-item">
-                    <label>Question[1]</label>
-                    <input type="text" class="form-control" name="questions[0][question_text]" placeholder="Enter a question" required>
-                    <label>Dealbreaker:</label>
-                    <div>
-                        <input type="radio" id="dealbreaker_yes" name="questions[0][dealbreaker]" value="yes" required> Yes
-                        <input type="radio" id="dealbreaker_no" name="questions[0][dealbreaker]" value="no"> No
-                    </div>
-                    <label>Correct Answer:</label>
-                    <div>
-                        <input type="radio" id="correct_answer_yes" name="questions[0][correct_answer]" value="yes"> Yes
-                        <input type="radio" id="correct_answer_no" name="questions[0][correct_answer]" value="no"> No
-                    </div> -->
                     <div class="invalid-feedback">This question is required.</div>
-                <!-- </div> -->
             </div>
             <button type="button" class="btn btn-info mt-2" id="addQuestion">Add Question</button>
         </div>
@@ -364,6 +352,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
+                </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>

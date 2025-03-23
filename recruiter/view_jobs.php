@@ -1,6 +1,8 @@
 <?php
-// view_jobs.php
-require 'db.php';
+    // view_jobs.php
+    require 'db.php';
+    include 'header.php';
+    include 'sidebar.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +15,7 @@ require 'db.php';
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+<div id="content">
 <div class="container mt-5">
     <h1>Job Posts</h1>
 
@@ -20,11 +23,12 @@ require 'db.php';
         <div id="notification" class="alert d-none" role="alert"></div>
     </div>
 
-
     <!-- Search Bar -->
     <div class="mb-4">
         <input type="text" id="searchQuery" class="form-control" placeholder="Search job posts by title or company">
     </div>
+
+    <a href="job_postings.php" class="btn btn-primary" style="margin-bottom: 20px;">Create New Job Posting</a>
 
     <!-- Tabs for Job Post Status -->
     <ul class="nav nav-tabs" id="jobTabs" role="tablist">
@@ -45,6 +49,7 @@ require 'db.php';
         <div class="tab-pane fade" id="open" role="tabpanel"></div>
         <div class="tab-pane fade" id="closed" role="tabpanel"></div>
     </div>
+</div>
 </div>
 
 <!-- Modal for Job Details -->
