@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require 'db.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -8,12 +9,9 @@ function sendVerificationEmail($email, $verification_token) {
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
-        $mail->Host = 'smtp.hostinger.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'no-reply@bonafideplacement.site';
-        $mail->Password = 'Bonafide_01';
-        $mail->SMTPSecure = 'ssl';
-        $mail->Port = 465;
+        $mail->Host = 'smtp.freesmtpservers.com';
+        $mail->SMTPAuth = false;
+        $mail->Port = 25;
 
         $mail->setFrom('no-reply@bonafideplacement.site', 'Bonafide Placement');
         $mail->addAddress($email);

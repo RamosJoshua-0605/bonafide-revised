@@ -1,7 +1,10 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+
+require 'auth.php';
 
 // Get user_id from session
 $user_id = $_SESSION['user_id'] ?? null;
@@ -39,6 +42,9 @@ $applications = $query->fetchAll(PDO::FETCH_ASSOC);
 $groupedApplications = [
     'rejected' => [],
     'withdrawn' => [],
+    'screened' => [],
+    'pending' => [],
+    'shortlisted' => [],
     'interviewed' => [],
     'offered' => [],
     'hired' => [],
@@ -53,8 +59,14 @@ foreach ($applications as $app) {
         $groupedApplications['Interviewed'][] = $app;
     } elseif ($app['status'] === 'Offered') {
         $groupedApplications['Offered'][] = $app;
-    } elseif (!empty($app['Hired'])) {
+    } elseif ($app['status'] === 'Hired') {
         $groupedApplications['Hired'][] = $app;
+    } elseif ($app['status'] === 'Screened') {
+        $groupedApplications['Screened'][] = $app;
+    } elseif ($app['status'] === 'Shortlisted') {
+        $groupedApplications['Shortlisted'][] = $app;
+    } elseif ($app['status'] === 'Pending') {
+        $groupedApplications['Pending'][] = $app;
     }
 }
 ?>

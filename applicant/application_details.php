@@ -1,6 +1,7 @@
 <?php
 ob_start(); 
 require 'db.php';
+require 'auth.php';
 include 'header.php';
 include 'sidebar.php';
 
@@ -114,6 +115,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['withdraw'])) {
             'job_post_id' => $job_post_id
         ]);
 
+        // Fetch job post details (for notification message)
+        $jobQuery = $pdo->prepare("SELECT job_post_id FROM job_applications WHERE application_id = :application_id");
+        $jobQuery->execute(['application_id' => $application_id]);
+        $job = $jobQuery->fetch(PDO::FETCH_ASSOC);
+        $job_post_id = $job['job_post_id'];
+
+        // Insert notification for recruiters
+        $recruitersQuery = $pdo->prepare("SELECT login_id FROM user_logins WHERE role = 'Recruiter'");
+        $recruitersQuery->execute();
+        $recruiters = $recruitersQuery->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($recruiters as $recruiter) {
+            $notificationQuery = $pdo->prepare("
+                INSERT INTO notifications (user_id, title, subject, link, is_read, created_at) 
+                VALUES (:user_id, :title, :subject, :link, 0, NOW())
+            ");
+            $notificationQuery->execute([
+                'user_id'  => $recruiter['login_id'],
+                'title'    => 'Application Withdrawn',
+                'subject'  => 'An applicant has withdrawn their application.',
+                'link'     => 'view_application_details.php?application_id=' . $application_id
+            ]);
+        }
+        
         $pdo->commit();
         // Set a session success message
         $_SESSION['withdraw_success'] = "Your application has been withdrawn successfully.";
@@ -252,7 +277,7 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
     <!-- Questionnaire -->
     <?php if ($questionnaire): ?>
         <div class="card mb-4">
-            <div class="card-header">Questionnaire</div>
+            <div class="card-header">Pre-Qualification Assesment</div>
             <div class="card-body">
                 <?php foreach ($questionnaire as $answer): ?>
                     <p><strong>Question:</strong> <?= htmlspecialchars($answer['question_text']) ?></p>

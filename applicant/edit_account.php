@@ -1,11 +1,14 @@
 <?php
+ob_start();
 require 'db.php';
 require 'header.php';
 require 'sidebar.php';
 
+require 'auth.php';
+
 // Ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: index.php");
+    header("Location: profile.php");
     exit;
 }
 

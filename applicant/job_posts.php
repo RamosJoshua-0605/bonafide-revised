@@ -1,12 +1,33 @@
 <?php 
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
+
+$user_id = $_SESSION['user_id']; // Get user ID from session
 
 // Fetch all open job posts
 $sql = "SELECT * FROM job_posts WHERE status = 'open'";
 $stmt = $pdo->query($sql);
 $jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Filter out jobs where the user has applied (unless withdrawn)
+$filteredJobPosts = [];
+
+foreach ($jobPosts as $job) {
+    $job_post_id = $job['job_post_id'];
+
+    // Get the application status (if exists)
+    $stmt = $pdo->prepare("SELECT status FROM job_applications WHERE job_post_id = ? AND user_id = ?");
+    $stmt->execute([$job_post_id, $user_id]);
+    $application_status = $stmt->fetchColumn();
+
+    // Only hide jobs where the user applied and status is NOT 'Withdrawn'
+    if (!$application_status || strtolower($application_status) === 'withdrawn') {
+        $filteredJobPosts[] = $job;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -40,9 +61,9 @@ $jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Job Posts Container -->
         <div id="job-posts">
-            <?php if (count($jobPosts) > 0): ?>
+            <?php if (count($filteredJobPosts) > 0): ?>
                 <div class="row">
-                    <?php foreach ($jobPosts as $job): ?>
+                    <?php foreach ($filteredJobPosts as $job): ?>
                         <div class="col-md-6 col-lg-4 mb-4 job-post">
                             <div class="card h-100 shadow-sm">
                                 <div class="card-body">
@@ -77,7 +98,10 @@ $jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             </button>
                                         <?php endif; ?>
                                     </div>
-                                    <a href="apply.php?job_post_id=<?= $job['job_post_id'] ?>" class="btn btn-primary mt-3">Apply Now</a>
+                                    <a href="apply.php?job_post_id=<?= $job['job_post_id'] ?>" 
+                                    class="btn btn-primary mt-3">
+                                    Apply Now
+                                    </a>                                
                                 </div>
                             </div>
                         </div>

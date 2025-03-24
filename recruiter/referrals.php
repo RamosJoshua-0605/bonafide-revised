@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php'; 
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 if (!isset($_SESSION['login_id'])) {
     header("Location: index.php");

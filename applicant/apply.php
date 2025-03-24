@@ -1,5 +1,7 @@
 <?php
+ob_start();
 require 'db.php';
+require 'auth.php';
 include 'header.php';
 include 'sidebar.php';
 
@@ -86,19 +88,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Save resume file
     move_uploaded_file($_FILES['resume']['tmp_name'], 'uploads/' . $resume_reference);
 
-    // Insert into job_applications
-    $applicationQuery = $pdo->prepare("
-        INSERT INTO job_applications (job_post_id, user_id, resume_reference, work_experience, status, applied_at) 
-        VALUES (:job_post_id, :user_id, :resume_reference, :work_experience, :status, NOW())
+ // Check if the user has already applied for this job
+ $applicationQuery = $pdo->prepare("SELECT * FROM job_applications WHERE job_post_id = :job_post_id AND user_id = :user_id");
+ $applicationQuery->execute([
+     'job_post_id' => $job_post_id,
+     'user_id' => $user_id
+ ]);
+ $existingApplication = $applicationQuery->fetch(PDO::FETCH_ASSOC);
+
+ if ($existingApplication) {
+     // If the user has already applied, update the existing application
+     $updateQuery = $pdo->prepare("
+         UPDATE job_applications 
+         SET resume_reference = :resume_reference, 
+             work_experience = :work_experience, 
+             status = :status 
+         WHERE application_id = :application_id
+     ");
+     $updateQuery->execute([
+         'resume_reference' => $resume_reference,
+         'work_experience' => $work_experience,
+         'status' => $status,
+         'application_id' => $existingApplication['application_id']
+     ]);
+
+     $application_id = $existingApplication['application_id'];
+ } else {
+     // Insert into job_applications if no existing application
+     $insertQuery = $pdo->prepare("
+         INSERT INTO job_applications (job_post_id, user_id, resume_reference, work_experience, status, applied_at) 
+         VALUES (:job_post_id, :user_id, :resume_reference, :work_experience, :status, NOW())
+     ");
+     $insertQuery->execute([
+         'job_post_id' => $job_post_id,
+         'user_id' => $user_id,
+         'resume_reference' => $resume_reference,
+         'work_experience' => $work_experience,
+         'status' => $status
+     ]);
+     $application_id = $pdo->lastInsertId();
+
+     // Insert notification for recruiters
+$recruitersQuery = $pdo->prepare("SELECT login_id FROM user_logins WHERE role = 'Recruiter'");
+$recruitersQuery->execute();
+$recruiters = $recruitersQuery->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($recruiters as $recruiter) {
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at) 
+        VALUES (:login_id, :title, :subject, :link, 0, NOW())
     ");
-    $applicationQuery->execute([
-        'job_post_id' => $job_post_id,
-        'user_id' => $user_id,
-        'resume_reference' => $resume_reference,
-        'work_experience' => $work_experience,
-        'status' => $status
+    $notificationQuery->execute([
+        'user_id' => $recruiter['login_id'],
+        'title' => 'New Job Application',
+        'subject' => 'A new application has been submitted for the job post: ' . htmlspecialchars($jobDetails['job_title']),
+        'link' => 'view_application_details.php?application_id=' . $application_id
     ]);
-    $application_id = $pdo->lastInsertId();
+}
+ }
 
     // Insert questionnaire answers with correctness evaluation
     if (!empty($questions)) {
@@ -212,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
      <!-- Questionnaire -->
      <?php if (!empty($questions)): ?>
-        <h4 class="mt-4">Questionnaire</h4>
+        <h4 class="mt-4">Pre-Qualification Assesment</h4>
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data">

@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php'; // Include database connection
 require 'header.php';
 require 'sidebar.php';
+require 'auth.php';
 
 //  Redirect if not logged in
 if (!isset($_SESSION['login_id'])) {
@@ -347,7 +349,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Checkbox to include Questionnaire -->
-        <input type="checkbox" id="includeQuestionnaire" checked> Include Questions Section
+        <input type="checkbox" id="includeQuestionnaire" checked> Include Pre-Qualified Assesment
 
         <!-- Questions Section -->
         <div class="mb-3" id="questionsSection" style="display: block;">

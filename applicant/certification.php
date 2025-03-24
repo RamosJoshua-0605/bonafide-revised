@@ -1,11 +1,15 @@
 <?php
+ob_start();
 require 'db.php'; // Include database connection
 include 'header.php';
 include 'sidebar.php';
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: profile.php");
+    exit;
+} else if (!isset($_SESSION['login_id'])) {
+    header("Location: index.php");
     exit;
 }
 

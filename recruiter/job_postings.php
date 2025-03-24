@@ -4,6 +4,7 @@ require 'db.php'; // Include database connection
 
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 // Start session to get logged-in user's ID
 if (!isset($_SESSION['login_id'])) {
@@ -337,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Checkbox to include Questionnaire -->
-        <input type="checkbox" id="includeQuestionnaire"> Include Questions Section
+        <input type="checkbox" id="includeQuestionnaire"> Include Pre-Qualification Assesment
 
         <!-- Questions Section -->
         <div class="mb-3" id="questionsSection" style="display: none;">

@@ -1,5 +1,6 @@
 <?php
 require 'db.php';
+require 'auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $application_id = $_POST['application_id'];
@@ -130,6 +131,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'avg_total_duration' => $averages['avg_total_duration'] ?? 0,
             'job_post_id' => $job_post_id
             ]);
+
+           // Retrieve user_id of the applicant
+$userQuery = $pdo->prepare("SELECT user_id FROM job_applications WHERE application_id = :application_id");
+$userQuery->execute(['application_id' => $application_id]);
+$user = $userQuery->fetch(PDO::FETCH_ASSOC);
+
+if ($user) {
+    $user_id = $user['user_id'];
+    $notification_title = "Application Rejected";
+    $notification_subject = "Your job application has been rejected.";
+    $notification_link = "http://localhost/bonafide/applicant/application_details.php?application_id=" . $application_id;
+
+    // Insert notification for the user
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at)
+        VALUES (:user_id, :title, :subject, :link, 0, NOW())
+    ");
+    $notificationQuery->execute([
+        'user_id' => $user_id,
+        'title' => $notification_title,
+        'subject' => $notification_subject,
+        'link' => $notification_link
+    ]);
+}
         } elseif ($action === 'interview') {
                 // Schedule interview
                 $interview_type = $_POST['interview_type'];
@@ -209,9 +234,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
                 $metricsQuery->execute(['job_post_id' => $job_post_id]);
         
-                // Optionally log success or redirect
-                header("Location: view_application_details.php?application_id=$application_id&success=1");
-                exit();     
+                // Retrieve user_id of the applicant
+$userQuery = $pdo->prepare("SELECT user_id FROM job_applications WHERE application_id = :application_id");
+$userQuery->execute(['application_id' => $application_id]);
+$user = $userQuery->fetch(PDO::FETCH_ASSOC);
+
+if ($user) {
+    $user_id = $user['user_id'];
+    $notification_title = "Interview Scheduled";
+    $notification_subject = "An interview has been scheduled for you application.";
+    $notification_link = "http://localhost/bonafide/applicant/application_details.php?application_id=" . $application_id;
+
+    // Insert notification for the user
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at)
+        VALUES (:user_id, :title, :subject, :link, 0, NOW())
+    ");
+    $notificationQuery->execute([
+        'user_id' => $user_id,
+        'title' => $notification_title,
+        'subject' => $notification_subject,
+        'link' => $notification_link
+    ]);
+}
         } elseif ($action === 'offer') {
             $remarks_offer = $_POST['remarks_offer'] ?? null; // Get the rejection remarks
             // Make an offer
@@ -250,6 +295,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ");
             $metricsQuery->execute(['job_post_id' => $job_post_id]);
 
+            // Retrieve user_id of the applicant
+$userQuery = $pdo->prepare("SELECT user_id FROM job_applications WHERE application_id = :application_id");
+$userQuery->execute(['application_id' => $application_id]);
+$user = $userQuery->fetch(PDO::FETCH_ASSOC);
+
+if ($user) {
+    $user_id = $user['user_id'];
+    $notification_title = "Job Offer";
+    $notification_subject = "You have received a job offer.";
+    $notification_link = "http://localhost/bonafide/applicant/application_details.php?application_id=" . $application_id;
+
+    // Insert notification for the user
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at)
+        VALUES (:user_id, :title, :subject, :link, 0, NOW())
+    ");
+    $notificationQuery->execute([
+        'user_id' => $user_id,
+        'title' => $notification_title,
+        'subject' => $notification_subject,
+        'link' => $notification_link
+    ]);
+}
         } elseif ($action === 'deploy') {
             // Deploy the applicant
             $deployment_remarks = $_POST['deployment_remarks'] ?? null; // Get the rejection remarks
@@ -365,6 +433,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'avg_total_duration' => $averages['avg_total_duration'] ?? 0,
             'job_post_id' => $job_post_id
             ]);
+
+            // Retrieve user_id of the applicant
+$userQuery = $pdo->prepare("SELECT user_id FROM job_applications WHERE application_id = :application_id");
+$userQuery->execute(['application_id' => $application_id]);
+$user = $userQuery->fetch(PDO::FETCH_ASSOC);
+
+if ($user) {
+    $user_id = $user['user_id'];
+    $notification_title = "You have been hired!";
+    $notification_subject = "Your job application has been accepted.";
+    $notification_link = "http://localhost/bonafide/applicant/application_details.php?application_id=" . $application_id;
+
+    // Insert notification for the user
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at)
+        VALUES (:user_id, :title, :subject, :link, 0, NOW())
+    ");
+    $notificationQuery->execute([
+        'user_id' => $user_id,
+        'title' => $notification_title,
+        'subject' => $notification_subject,
+        'link' => $notification_link
+    ]);
+}
         } else {
             throw new Exception("Invalid action.");
         }        

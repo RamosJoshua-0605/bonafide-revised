@@ -1,5 +1,7 @@
 <?php
+ob_start();
 require 'db.php';
+require 'auth.php';
 
 $jobPostId = isset($_GET['job_post_id']) ? (int)$_GET['job_post_id'] : 0;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -35,7 +37,7 @@ if ($jobPostId > 0 && $page > 0) {
 
     // Fetch paginated applications
     $applicationsQuery = $pdo->prepare("
-        SELECT ja.application_id, ja.job_post_id, ja.user_id, ja.status, ja.work_experience, ja.applied_at, 
+        SELECT ja.application_id, ja.job_post_id, ja.user_id, ja.comments, ja.status, ja.work_experience, ja.applied_at, 
                u.first_name, u.last_name, u.age, u.email_address, u.cellphone_number, u.address,
                je.highest_educational_attainment
         FROM job_applications ja

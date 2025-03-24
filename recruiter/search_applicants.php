@@ -1,5 +1,7 @@
 <?php
+ob_start();
 require 'db.php';
+require 'auth.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -99,14 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_applicants']
                 $mail = new PHPMailer(true);
                 try {
                     $mail->isSMTP();
-                    $mail->Host = 'smtp.mailersend.net';
-                    $mail->SMTPAuth = true;
-                    $mail->Username = 'MS_34u9ve@trial-vywj2lprq3147oqz.mlsender.net';
-                    $mail->Password = '0eiJXVs59vuXSJzt';
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = 587;
+                    $mail->Host = 'smtp.freesmtpservers.com';
+                    $mail->SMTPAuth = false;
+                    $mail->Port = 25;
 
-                    $mail->setFrom('MS_34u9ve@trial-vywj2lprq3147oqz.mlsender.net', 'Bonafide Trainology And Placement Services');
+                    $mail->setFrom('no-reply@bonafideplacement.site', 'Bonafide Placement');
                     $mail->addAddress($email);
 
                     $mail->isHTML(true);

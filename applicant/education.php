@@ -1,11 +1,13 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 // Redirect if the user is not logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: profile.php");
     exit;
 }
 

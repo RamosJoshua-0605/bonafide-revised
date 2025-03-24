@@ -1,10 +1,12 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: profile.php");
     exit;
 }
 

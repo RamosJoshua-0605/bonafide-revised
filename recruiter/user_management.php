@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 ?>
 
 <!DOCTYPE html>

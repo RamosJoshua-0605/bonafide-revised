@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 // Constants
 $itemsPerPage = 5;
@@ -14,7 +16,6 @@ $jobDetailsQuery = $pdo->prepare("
 ");
 $jobDetailsQuery->execute();
 $jobDetails = $jobDetailsQuery->fetchAll(PDO::FETCH_ASSOC);
-
 
 // Function to fetch paginated applications
 function getApplications($pdo, $jobPostId, $page, $itemsPerPage) {
@@ -57,6 +58,7 @@ function calculateScore($user, $jobPost, $answers) {
     <title>Job Applications</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .badge-small {
             font-size: 0.75rem; /* Smaller font size */
@@ -131,6 +133,7 @@ $(document).ready(function () {
                                             <p>Phone: ${app.cellphone_number}</p>
                                             <p>Address: ${app.address}</p>
                                             <p><strong>Score: ${app.score}</strong></p>
+                                            <p><strong>Comments: ${app.comments ? app.comments : 'No comments'}</strong></p>
                                         </div>
                                         <div>
                                             <a href="view_application_details.php?application_id=${app.application_id}" class="btn btn-info btn-sm">View Application</a>
@@ -172,8 +175,13 @@ $(document).ready(function () {
     <?php foreach ($jobDetails as $job): ?>
     loadApplications(<?= $job['job_post_id'] ?>, 1);
     <?php endforeach; ?>
+
+     // Event listener for expanding/collapsing job details
+     $(document).on('click', '[data-bs-toggle="collapse"]', function () {
+        const target = $(this).data('bs-target');
+        $(target).collapse('toggle');
+    });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

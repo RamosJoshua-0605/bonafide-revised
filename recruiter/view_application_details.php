@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
+require 'auth.php';
 
 // Get application_id from the URL
 $application_id = $_GET['application_id'] ?? null;
@@ -91,6 +93,25 @@ $offer = $offer_query->fetch(PDO::FETCH_ASSOC);
 $deployment_query = $pdo->prepare("SELECT * FROM deployment_details WHERE application_id = :application_id");
 $deployment_query->execute(['application_id' => $application_id]);
 $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
+
+// Get applicant ID from GET or POST request
+$user_id = $_GET['user_id'] ?? null;
+
+$resume_path = "#"; // Default fallback if no resume is found
+
+if ($application_id) {
+    // Prepare and execute the query
+    $resumeQuery = $pdo->prepare("
+        SELECT resume_reference FROM job_applications WHERE application_id = :application_id
+    ");
+    $resumeQuery->execute(['application_id' => $application_id]);
+    $resume = $resumeQuery->fetch(PDO::FETCH_ASSOC);
+
+    // Check if resume_reference exists and generate the path
+    if ($resume && !empty($resume['resume_reference'])) {
+        $resume_path = "../applicant/uploads/" . htmlspecialchars($resume['resume_reference']);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -153,6 +174,10 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
             <p><strong>Religion:</strong> <?= htmlspecialchars($application['religion']) ?></p>
             <p><strong>Tattoo:</strong> <?= $application['has_tattoo'] ? 'Yes' : 'No' ?></p>
             <p><strong>COVID-19 Vaccination:</strong> <?= htmlspecialchars($application['covid_vaccination_status']) ?></p>
+            <!-- Resume Download Link -->
+            <p><strong>Resume:</strong> 
+                <a href="<?= $resume_path ?>" download>Download Resume</a>
+            </p>
         </div>
     </div>
 
@@ -217,7 +242,7 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
     <!-- Questionnaire -->
     <?php if ($questionnaire_answers): ?>
         <div class="card mb-4">
-            <div class="card-header">Questionnaire</div>
+            <div class="card-header">Pre-Qualification Assesment</div>
             <div class="card-body">
                 <?php foreach ($questionnaire_answers as $answer): ?>
                     <p><strong>Question:</strong> <?= htmlspecialchars($answer['question_text']) ?></p>
@@ -234,6 +259,21 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
         </div>
     <?php endif; ?>
 
+    <!-- Comments Field -->
+    <div class="card mb-4">
+        <div class="card-header">Comments</div>
+        <div class="card-body">
+            <form method="post" action="update_comments.php">
+                <input type="hidden" name="application_id" value="<?= htmlspecialchars($application['application_id']) ?>">
+                <div class="mb-3">
+                    <label for="comments" class="form-label">Comments</label>
+                    <textarea name="comments" id="comments" class="form-control" rows="3"><?= htmlspecialchars($application['comments']) ?></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Comments</button>
+            </form>
+        </div>
+    </div>
+    
     <!-- Process Application -->
 <div class="card mb-4">
     
@@ -283,6 +323,8 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
                 </div>
             <?php endif; ?>
 
+             <!-- Hide dropdown if application is withdrawn, rejected, or hired -->
+             <?php if (!in_array($application['status'], ['Withdrawn', 'Rejected', 'Hired'])): ?>
             <!-- Status Selection -->
             <div class="mb-3">
                 <label for="status" class="form-label">Update Status</label>
@@ -366,7 +408,10 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" id='processbutton' class="btn btn-primary">Submit</button>
+            <?php else: ?>
+                <p class="text-danger"><strong>This application is <?= htmlspecialchars($application['status']) ?>. No further actions can be taken.</strong></p>
+            <?php endif; ?>
         </form>
     </div>
 </div>
@@ -380,7 +425,7 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
     const rejectFields = document.getElementById('reject-fields');
     const meetingLinkGroup = document.getElementById('meeting-link-group');
     const interviewTypeField = document.getElementById('interview_type');
-    const submitBtn = document.querySelector('button[type="submit"]');
+    const submitBtn = document.getElementById('processbutton');
 
     /**
      * Function to toggle visibility of fields based on selected action.

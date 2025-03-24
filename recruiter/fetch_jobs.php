@@ -1,5 +1,7 @@
 <?php
+ob_start();
 require 'db.php';
+require 'auth.php';
 
 if (isset($_POST['status'])) {
     $status = $_POST['status'];

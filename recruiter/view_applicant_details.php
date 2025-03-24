@@ -1,7 +1,9 @@
 <?php
+ob_start();
 require 'db.php'; // Include database connection
 require 'sidebar.php';
 require 'header.php';
+require 'auth.php';
 
 // Fetch user_id from query parameter
 $user_id = $_GET['user_id'] ?? null;
@@ -41,6 +43,22 @@ $workExperienceQuery->execute(['user_id' => $user_id]);
 $workExperiences = $workExperienceQuery->fetchAll(PDO::FETCH_ASSOC);
 
 $base_path = '../applicant/';
+
+$resume_path = "#"; // Default fallback if no resume is found
+
+if ($user_id) {
+    // Prepare and execute the query
+    $resumeQuery = $pdo->prepare("
+        SELECT resume_reference FROM job_applications WHERE user_id = :user_id
+    ");
+    $resumeQuery->execute(['user_id' => $user_id]);
+    $resume = $resumeQuery->fetch(PDO::FETCH_ASSOC);
+
+    // Check if resume_reference exists and generate the path
+    if ($resume && !empty($resume['resume_reference'])) {
+        $resume_path = "../applicant/uploads/" . htmlspecialchars($resume['resume_reference']);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -86,6 +104,10 @@ $base_path = '../applicant/';
             <p><strong>Phone:</strong> <?= htmlspecialchars($user['cellphone_number']) ?></p>
             <p><strong>Email:</strong> <?= htmlspecialchars($user['email_address']) ?></p>
             <p><strong>Referral Code:</strong> <?= htmlspecialchars($user['referral_code']) ?></p>
+           <!-- Resume Download Link -->
+            <p><strong>Resume:</strong> 
+                <a href="<?= $resume_path ?>" download>Download Resume</a>
+            </p>
         </div>
     </div>
 
@@ -132,6 +154,6 @@ $base_path = '../applicant/';
         </div>
     <?php endif; ?>
 </div>
-                </div>
+</div>
 </body>
 </html>

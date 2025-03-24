@@ -1,12 +1,13 @@
 <?php
+ob_start();
 require 'db.php';
 include 'header.php';
 include 'sidebar.php';
 
-// Redirect if the user is not logged in or if `user_id` is already set
-if (!isset($_SESSION['login_id']) || isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
-    exit;
+// Check if user_id is set
+if (!isset($_SESSION['login_id'])) {
+    header("Location: index.php"); // Redirect to profile page
+    exit();
 }
 
 // Set log file path

@@ -1,8 +1,10 @@
 <?php
+ob_start();
     // view_jobs.php
     require 'db.php';
     include 'header.php';
     include 'sidebar.php';
+    require 'auth.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,0 +1,60 @@
+[24-Mar-2025 15:32:12 Europe/Berlin] Session Data: Array
+(
+    [verification_email] => ramosjoshua151@gmail.com
+    [login_id] => 15
+)
+
+[24-Mar-2025 15:32:17 Europe/Berlin] Session Data: Array
+(
+    [verification_email] => ramosjoshua151@gmail.com
+    [login_id] => 15
+)
+
+[24-Mar-2025 15:33:51 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:01 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:06 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:08 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:09 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:10 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:11 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
+[24-Mar-2025 15:34:12 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 15
+    [user_id] => 
+)
+
