@@ -58,3 +58,14 @@
     [user_id] => 
 )
 
+[24-Mar-2025 16:49:51 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 9
+)
+
+[24-Mar-2025 17:08:43 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 16
+    [user_id] => 
+)
+
