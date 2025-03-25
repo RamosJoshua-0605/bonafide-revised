@@ -18,7 +18,6 @@ $jobQuery = $pdo->prepare("SELECT * FROM job_posts WHERE job_post_id = :job_post
 $jobQuery->execute(['job_post_id' => $job_post_id]);
 $jobDetails = $jobQuery->fetch(PDO::FETCH_ASSOC);
 
-
 if (!$jobDetails) {
     die("Job post not found.");
 }
@@ -113,6 +112,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
      ]);
 
      $application_id = $existingApplication['application_id'];
+
+              // Insert notification for recruiters
+        $recruitersQuery = $pdo->prepare("SELECT login_id FROM user_logins WHERE role = 'Recruiter'");
+        $recruitersQuery->execute();
+        $recruiters = $recruitersQuery->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($recruiters as $recruiter) {
+            $notificationQuery = $pdo->prepare("
+                INSERT INTO notifications (user_id, title, subject, link, is_read, created_at) 
+                VALUES (:user_id, :title, :subject, :link, 0, NOW())
+            ");
+            $notificationQuery->execute([
+                'user_id' => $recruiter['login_id'],
+                'title' => 'New Job Application',
+                'subject' => 'A new application has been submitted for the job post: ' . htmlspecialchars($jobDetails['job_title']),
+                'link' => 'view_application_details.php?application_id=' . $application_id
+            ]);
+        }
  } else {
      // Insert into job_applications if no existing application
      $insertQuery = $pdo->prepare("
@@ -127,25 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          'status' => $status
      ]);
      $application_id = $pdo->lastInsertId();
-
-     // Insert notification for recruiters
-$recruitersQuery = $pdo->prepare("SELECT login_id FROM user_logins WHERE role = 'Recruiter'");
-$recruitersQuery->execute();
-$recruiters = $recruitersQuery->fetchAll(PDO::FETCH_ASSOC);
-
-foreach ($recruiters as $recruiter) {
-    $notificationQuery = $pdo->prepare("
-        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at) 
-        VALUES (:login_id, :title, :subject, :link, 0, NOW())
-    ");
-    $notificationQuery->execute([
-        'user_id' => $recruiter['login_id'],
-        'title' => 'New Job Application',
-        'subject' => 'A new application has been submitted for the job post: ' . htmlspecialchars($jobDetails['job_title']),
-        'link' => 'view_application_details.php?application_id=' . $application_id
-    ]);
-}
- }
 
     // Insert questionnaire answers with correctness evaluation
     if (!empty($questions)) {
@@ -203,8 +201,29 @@ foreach ($recruiters as $recruiter) {
             echo "Error updating metrics: " . $e->getMessage();
         }
  
-        // Store success message
-    $successMessage = "<div class='alert alert-success'>Application submitted successfully! You will be redirected shortly</div>";
+        
+         // Insert notification for recruiters
+$recruitersQuery = $pdo->prepare("SELECT login_id FROM user_logins WHERE role = 'Recruiter'");
+$recruitersQuery->execute();
+$recruiters = $recruitersQuery->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($recruiters as $recruiter) {
+    $notificationQuery = $pdo->prepare("
+        INSERT INTO notifications (user_id, title, subject, link, is_read, created_at) 
+        VALUES (:user_id, :title, :subject, :link, 0, NOW())
+    ");
+    $notificationQuery->execute([
+        'user_id' => $recruiter['login_id'],
+        'title' => 'New Job Application',
+        'subject' => 'A new application has been submitted for the job post: ' . htmlspecialchars($jobDetails['job_title']),
+        'link' => 'view_application_details.php?application_id=' . $application_id
+    ]);
+}
+ }
+
+ // Store success message
+ $successMessage = "<div class='alert alert-success'>Application submitted successfully! You will be redirected shortly</div>";
+
 
     // Redirect after 3 seconds using JavaScript
     echo "<script>

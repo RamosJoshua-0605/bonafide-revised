@@ -1,6 +1,18 @@
 <?php
 require 'db.php';
 
+// If user ID is already set and the user is an applicant, proceed to dashboard
+if (isset($_SESSION['login_id'])) {
+    $stmt = $pdo->prepare("SELECT role FROM user_logins WHERE login_id = ?");
+    $stmt->execute([$_SESSION['login_id']]);
+    $user = $stmt->fetch();
+
+    if ($user && $user['role'] == 'Applicant') {
+        header("Location: dashboard.php");
+        exit;
+    }
+}
+
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];

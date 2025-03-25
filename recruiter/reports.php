@@ -5,6 +5,7 @@ include 'header.php';
 include 'sidebar.php';
 require 'auth.php';
 
+// Fetch data for the reports
 $totalMetricsQuery = $pdo->prepare("
     SELECT 
         jp.job_title AS job_post_title,
@@ -170,8 +171,6 @@ $avgSalaryQuery = $pdo->prepare("
 $avgSalaryQuery->execute();
 $avgSalaries = $avgSalaryQuery->fetchAll(PDO::FETCH_ASSOC);
 
-
-
 // Job-Specific Metrics for Each Job Post
 $jobPostMetricsQuery = $pdo->prepare("
     SELECT 
@@ -335,15 +334,6 @@ $interviewsPerHirePerJobPostJSON = json_encode($interviewsPerHirePerJobPost);
             margin: auto;
         }
 
-        /* Centered Content */
-        #content1 {
-            margin-left: 200px;
-            padding: 20px;
-            transition: margin-left 0.3s ease;
-            margin-top: 20px; /* Prevents overlap with header */
-            padding-bottom: 60px; /* Adds bottom spacing */
-        }
-
         /* Responsive Grid Layout */
         .grid-layout {
             display: grid;
@@ -356,7 +346,6 @@ $interviewsPerHirePerJobPostJSON = json_encode($interviewsPerHirePerJobPost);
             margin: 20px 0;
         }
 
-
         @media (max-width: 768px) {
             .grid-layout {
                 grid-template-columns: 1fr; /* Single column on small screens */
@@ -366,243 +355,253 @@ $interviewsPerHirePerJobPostJSON = json_encode($interviewsPerHirePerJobPost);
 </head>
 
 <body>
-<div id="content1">
+<div id="content">
     <div class="container mt-4">
-    <h2 id="totalApplicantsHeader">Total Applicants: </h2>
-
-    <!-- Most Sought After Jobs -->
-    <div class="card mb-3">
-            <div class="card-header bg-primary text-white">Most Sought After Jobs</div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <?php foreach ($top_jobs as $job): ?>
-                        <li class="list-group-item">
-                            <?= htmlspecialchars($job['job_title']) ?> - <?= $job['total_applicants'] ?> Applicants
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Most Sought After Qualifications -->
-        <div class="card mb-3">
-            <div class="card-header bg-success text-white">Most Sought After Qualifications</div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <?php foreach ($top_certifications as $cert): ?>
-                        <li class="list-group-item">
-                            <?= htmlspecialchars(ucwords($cert['certification_name'])) ?> - <?= $cert['hired_count'] ?> Hires
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Top 5 Locations -->
-        <div class="card mb-3">
-            <div class="card-header bg-warning text-dark">Top 5 Locations With Most Applications</div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <?php foreach ($topLocations as $location): ?>
-                        <li class="list-group-item">
-                            <?= htmlspecialchars($location['location']) ?> - <?= $location['application_count'] ?> Applications
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Average Salary Per Job Hire -->
-<div class="card mb-3">
-    <div class="card-header bg-info text-white">Average Salary Per Job Hire</div>
-    <div class="card-body">
-        <ul class="list-group">
-            <?php foreach ($avgSalaries as $salary): ?>
-                <li class="list-group-item">
-                    <?= htmlspecialchars($salary['job_title']) ?> - PHP<?= number_format($salary['avg_salary'], 2) ?>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-</div>
-
-
-        <!-- Accordion -->
-        <div class="accordion" id="chartsAccordion">
-            <!-- Chart 1: Average Duration -->
+        <div class="accordion" id="overallMetricsAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartOne">
-                        Average Duration & Applicants
+                <h2 class="accordion-header" id="headingOverallMetrics">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOverallMetrics" aria-expanded="true" aria-controls="collapseOverallMetrics">
+                        Overall Metrics
                     </button>
                 </h2>
-                <div id="chartOne" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container">
-                            <canvas id="avgDurationApplicantsChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 2: Source Effectiveness -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartTwo">
-                        Source Effectiveness
-                    </button>
-                </h2>
-                <div id="chartTwo" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container pie-doughnut-container">
-                            <canvas id="sourceEffectivenessChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 3: Dropout vs Hire Ratio -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartThree">
-                        Dropout vs Hire Ratio
-                    </button>
-                </h2>
-                <div id="chartThree" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container pie-doughnut-container">
-                            <canvas id="dropoutHireRatioChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 4: Drop-Off Rates -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartFour">
-                        Drop-Off Rates
-                    </button>
-                </h2>
-                <div id="chartFour" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container">
-                            <canvas id="dropOffRatesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 5: Rejected vs Withdrawn -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartFive">
-                        Rejected vs Withdrawn Applicants
-                    </button>
-                </h2>
-                <div id="chartFive" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container pie-doughnut-container">
-                            <canvas id="rejectedWithdrawnChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 6: Conversion Rates -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartSix">
-                        Conversion Rates
-                    </button>
-                </h2>
-                <div id="chartSix" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container">
-                            <canvas id="conversionRatesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 7: Referral Success -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartSeven">
-                        Referral Success Rate
-                    </button>
-                </h2>
-                <div id="chartSeven" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container pie-doughnut-container">
-                            <canvas id="referralSuccessChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart 8: Interviews Per Hire -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartEight">
-                        Interviews Per Hire
-                    </button>
-                </h2>
-                <div id="chartEight" class="accordion-collapse collapse show">
-                    <div class="accordion-body text-center">
-                        <div class="chart-container">
-                            <canvas id="interviewsPerHireChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- End of Accordion -->
-    </div>
-
-
-    <div class="container mt-4">
-    <h2>Job Specific Metrics</h2>
-
-    <div class="accordion" id="jobMetricsAccordion">
-        <?php foreach ($jobPostMetrics as $index => $job): ?>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading<?= $index ?>">
-                    <button class="accordion-button <?= $index > 0 ? 'collapsed' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $index ?>" aria-expanded="<?= $index === 0 ? 'true' : 'false' ?>" aria-controls="collapse<?= $index ?>">
-                        <?= htmlspecialchars($job['job_post_title']) ?>
-                    </button>
-                </h2>
-                <div id="collapse<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>" aria-labelledby="heading<?= $index ?>" data-bs-parent="#jobMetricsAccordion">
+                <div id="collapseOverallMetrics" class="accordion-collapse collapse show" aria-labelledby="headingOverallMetrics" data-bs-parent="#overallMetricsAccordion">
                     <div class="accordion-body">
-                    <h3>Job-Specific Metrics</h3>
-                        <div class="chart-container">
-                            <canvas id="jobMetricsChart<?= $index ?>"></canvas>
-                        </div>
-                        <hr>
+                        <h2 id="totalApplicantsHeader">Total Applicants: </h2>
 
-                        <h3>Drop-Off Rates</h3>
-                        <div class="chart-container">
-                            <canvas id="dropoffChart<?= $index ?>"></canvas>
+                        <!-- Most Sought After Jobs -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">Most Sought After Jobs</div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <?php foreach ($top_jobs as $job): ?>
+                                        <li class="list-group-item">
+                                            <?= htmlspecialchars($job['job_title']) ?> - <?= $job['total_applicants'] ?> Applicants
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         </div>
-                        <hr>
 
-                        <h3>Conversion Rates</h3>
-                        <div class="chart-container">
-                            <canvas id="conversionChart<?= $index ?>"></canvas>
+                        <!-- Most Sought After Qualifications -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">Most Sought After Qualifications</div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <?php foreach ($top_certifications as $cert): ?>
+                                        <li class="list-group-item">
+                                            <?= htmlspecialchars(ucwords($cert['certification_name'])) ?> - <?= $cert['hired_count'] ?> Hires
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         </div>
-                        <hr>
 
-                        <h3>Interviews Per Hire</h3>
-                        <div class="chart-container">
-                            <canvas id="interviewsChart<?= $index ?>"></canvas>
+                        <!-- Top 5 Locations -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-warning text-dark">Top 5 Locations With Most Applications</div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <?php foreach ($topLocations as $location): ?>
+                                        <li class="list-group-item">
+                                            <?= htmlspecialchars($location['location']) ?> - <?= $location['application_count'] ?> Applications
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         </div>
+
+                        <!-- Average Salary Per Job Hire -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white">Average Salary Per Job Hire</div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <?php foreach ($avgSalaries as $salary): ?>
+                                        <li class="list-group-item">
+                                            <?= htmlspecialchars($salary['job_title']) ?> - PHP<?= number_format($salary['avg_salary'], 2) ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Accordion for Charts -->
+                        <div class="accordion" id="chartsAccordion">
+                            <!-- Chart 1: Average Duration -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartOne">
+                                        Average Duration & Applicants
+                                    </button>
+                                </h2>
+                                <div id="chartOne" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container">
+                                            <canvas id="avgDurationApplicantsChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 2: Source Effectiveness -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartTwo">
+                                        Source Effectiveness
+                                    </button>
+                                </h2>
+                                <div id="chartTwo" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container pie-doughnut-container">
+                                            <canvas id="sourceEffectivenessChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 3: Dropout vs Hire Ratio -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartThree">
+                                        Dropout vs Hire Ratio
+                                    </button>
+                                </h2>
+                                <div id="chartThree" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container pie-doughnut-container">
+                                            <canvas id="dropoutHireRatioChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 4: Drop-Off Rates -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartFour">
+                                        Drop-Off Rates
+                                    </button>
+                                </h2>
+                                <div id="chartFour" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container">
+                                            <canvas id="dropOffRatesChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 5: Rejected vs Withdrawn -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartFive">
+                                        Rejected vs Withdrawn Applicants
+                                    </button>
+                                </h2>
+                                <div id="chartFive" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container pie-doughnut-container">
+                                            <canvas id="rejectedWithdrawnChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 6: Conversion Rates -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartSix">
+                                        Conversion Rates
+                                    </button>
+                                </h2>
+                                <div id="chartSix" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container">
+                                            <canvas id="conversionRatesChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 7: Referral Success -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartSeven">
+                                        Referral Success Rate
+                                    </button>
+                                </h2>
+                                <div id="chartSeven" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container pie-doughnut-container">
+                                            <canvas id="referralSuccessChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart 8: Interviews Per Hire -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chartEight">
+                                        Interviews Per Hire
+                                    </button>
+                                </h2>
+                                <div id="chartEight" class="accordion-collapse collapse show">
+                                    <div class="accordion-body text-center">
+                                        <div class="chart-container">
+                                            <canvas id="interviewsPerHireChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- End of Accordion for Charts -->
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+        </div> <!-- End of Overall Metrics Accordion -->
+    </div>
+
+    <div class="container mt-4">
+        <h2>Job Specific Metrics</h2>
+
+        <div class="accordion" id="jobMetricsAccordion">
+            <?php foreach ($jobPostMetrics as $index => $job): ?>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading<?= $index ?>">
+                        <button class="accordion-button <?= $index > 0 ? 'collapsed' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $index ?>" aria-expanded="<?= $index === 0 ? 'true' : 'false' ?>" aria-controls="collapse<?= $index ?>">
+                            <?= htmlspecialchars($job['job_post_title']) ?>
+                        </button>
+                    </h2>
+                    <div id="collapse<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>" aria-labelledby="heading<?= $index ?>" data-bs-parent="#jobMetricsAccordion">
+                        <div class="accordion-body">
+                            <h3>Job-Specific Metrics</h3>
+                            <div class="chart-container">
+                                <canvas id="jobMetricsChart<?= $index ?>"></canvas>
+                            </div>
+                            <hr>
+
+                            <h3>Drop-Off Rates</h3>
+                            <div class="chart-container">
+                                <canvas id="dropoffChart<?= $index ?>"></canvas>
+                            </div>
+                            <hr>
+
+                            <h3>Conversion Rates</h3>
+                            <div class="chart-container">
+                                <canvas id="conversionChart<?= $index ?>"></canvas>
+                            </div>
+                            <hr>
+
+                            <h3>Interviews Per Hire</h3>
+                            <div class="chart-container">
+                                <canvas id="interviewsChart<?= $index ?>"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
-
-    </div>
 </body>
 
 <script>
@@ -616,16 +615,15 @@ window.onload = function() {
 
     document.getElementById('totalApplicantsHeader').innerText = "Total Applicants: " + totaldata.total_applicants;
 
-        // Common Chart Options (to maintain compact size)
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false, // Ensures charts fill the container
-            plugins: {
-                legend: { display: false },
-                title: { display: true }
-            }
-        };
-
+    // Common Chart Options (to maintain compact size)
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false, // Ensures charts fill the container
+        plugins: {
+            legend: { display: false },
+            title: { display: true }
+        }
+    };
 
     // Bar Chart: Average Total Duration & Total Applicants
     const avgDurationApplicantsCtx = document.getElementById('avgDurationApplicantsChart').getContext('2d');
@@ -975,4 +973,4 @@ window.onload = function() {
     <?php endforeach; ?>
 };
 </script>
-<html>
+</html>

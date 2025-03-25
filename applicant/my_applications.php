@@ -16,22 +16,17 @@ if (!$user_id) {
 // Fetch job applications of the applicant
 $query = $pdo->prepare("
     SELECT 
-        ja.*, 
-        jp.job_title, 
-        jp.partner_company, 
-        jp.location, 
-        jp.min_salary, 
-        jp.max_salary, 
-        i.meeting_type, 
-        i.interview_date, 
-        o.salary AS offered_salary, 
-        o.start_date AS offer_start_date, 
-        d.deployment_date
+        ja.application_id,
+        ja.job_post_id,
+        ja.status,
+        ja.applied_at,
+        jp.job_title,
+        jp.partner_company,
+        jp.location,
+        jp.min_salary,
+        jp.max_salary
     FROM job_applications ja
     JOIN job_posts jp ON ja.job_post_id = jp.job_post_id
-    LEFT JOIN interview_details i ON ja.application_id = i.application_id
-    LEFT JOIN offer_details o ON ja.application_id = o.application_id
-    LEFT JOIN deployment_details d ON ja.application_id = d.application_id
     WHERE ja.user_id = :user_id
     ORDER BY ja.applied_at DESC
 ");
