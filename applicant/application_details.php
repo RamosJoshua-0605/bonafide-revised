@@ -293,6 +293,24 @@ $deployment = $deployment_query->fetch(PDO::FETCH_ASSOC);
         </div>
     <?php endif; ?>
 
+<?php
+// Fetch comment from the database
+$comment_query = $pdo->prepare("SELECT comments FROM job_applications WHERE application_id = :application_id");
+$comment_query->execute(['application_id' => $application_id]);
+$comment = $comment_query->fetch(PDO::FETCH_ASSOC);
+?>
+
+<?php if ($comment && !empty($comment['comment'])): ?>
+    <div class="card mb-4">
+        <div class="card-header">Recruiter Comment</div>
+        <div class="card-body">
+            <p><?= htmlspecialchars($comment['comment']) ?></p>
+        </div>
+    </div>
+<?php else: ?>
+    <div class="alert alert-info">No comments available for this application.</div>
+<?php endif; ?>
+
      <!-- Interview Details -->
      <?php if ($interview): ?>
             <div class="card mb-4">

@@ -98,6 +98,18 @@ foreach ($jobPosts as $job) {
                                             </button>
                                         <?php endif; ?>
                                     </div>
+                                    <!-- Refer a friend, insert share link here -->
+<!-- Refer a friend, insert share link here -->
+<div class="mt-3">
+    <a href="mailto:?subject=Check out this job opportunity!&body=Hi, I found this job opportunity that might interest you: <?= urlencode($job['job_title']) ?> at <?= urlencode($job['partner_company']) ?>. You can view more details and apply here: <?= urlencode('http://yourwebsite.com/job_details.php?job_post_id=' . $job['job_post_id']) ?>" 
+       class="btn btn-outline-secondary">
+        Refer a Friend
+    </a>
+    <button class="btn btn-outline-secondary ms-2 copy-link-btn" 
+            data-link="http://localhost/bonafide/applicant/apply.php?job_post_id=<?= $job['job_post_id'] ?>">
+        Copy Link
+    </button>
+</div>
                                     <a href="apply.php?job_post_id=<?= $job['job_post_id'] ?>" 
                                     class="btn btn-primary mt-3">
                                     Apply Now
@@ -146,6 +158,19 @@ foreach ($jobPosts as $job) {
                         jobPostsContainer.innerHTML = html;
                     });
             });
+        const copyButtons = document.querySelectorAll('.copy-link-btn');
+
+        copyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const link = button.getAttribute('data-link');
+                navigator.clipboard.writeText(link).then(() => {
+                    // Show a prompt when the link is successfully copied
+                    alert('Link copied to clipboard: ' + link);
+                }).catch(err => {
+                    console.error('Failed to copy link: ', err);
+                });
+            });
+        });
         });
     </script>
 </body>

@@ -1,9 +1,43 @@
 <?php
 ob_start();
 require 'db.php';
-require 'auth.php';
 include 'header.php';
 include 'sidebar.php';
+
+if (!isset($_SESSION['login_id'])) {
+    echo "<div id='overlay' style='
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        font-size: 20px;
+        text-align: center;
+    '>
+        <div>
+            <p>You must be logged in to apply for this job.</p>
+            <p>Redirecting to the login page...</p>
+        </div>
+    </div>";
+    echo "<script>
+        setTimeout(function() {
+            window.location.href = 'index.php';
+        }, 3000); // Redirect after 3 seconds
+    </script>";
+    exit();
+}
+
+// Check if user_id is set
+if (!isset($_SESSION['user_id'])) {
+    header("Location: profile.php"); // Redirect to profile page
+    exit();
+}
 
 $successMessage = ""; // Initialize the message variable
 

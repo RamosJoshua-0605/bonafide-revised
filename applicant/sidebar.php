@@ -79,7 +79,7 @@
 
 <style>
     #sidebar {
-        margin-top: 50px;
+        margin-top: 25px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         z-index: 1000;

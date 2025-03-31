@@ -69,3 +69,8 @@
     [user_id] => 
 )
 
+[31-Mar-2025 01:13:31 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 17
+)
+

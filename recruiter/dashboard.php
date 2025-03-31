@@ -106,7 +106,7 @@ $applicantStages = $applicantStagesQuery->fetch(PDO::FETCH_ASSOC);
                                 <div class="card-body">
                                     <?php if (count($interviewEvents) > 0): ?>
                                         <?php foreach ($interviewEvents as $event): ?>
-                                        <a href="view_interview.php?id=<?= $event['id'] ?>" class="d-block mb-2">
+                                            <a href="view_application_details.php?application_id=<?= htmlspecialchars($event['id']) ?>" class="d-block mb-2">
                                             <?= $event['date'] ?> - <?= $event['type'] ?>
                                         </a>
                                         <?php endforeach; ?>
@@ -122,7 +122,7 @@ $applicantStages = $applicantStagesQuery->fetch(PDO::FETCH_ASSOC);
                                 <div class="card-body">
                                     <?php if (count($offerEvents) > 0): ?>
                                         <?php foreach ($offerEvents as $event): ?>
-                                        <a href="view_offer.php?id=<?= $event['id'] ?>" class="d-block mb-2">
+                                            <a href="view_application_details.php?application_id=<?= htmlspecialchars($event['id']) ?>" class="d-block mb-2">
                                             <?= $event['date'] ?> - <?= $event['type'] ?>
                                         </a>
                                         <?php endforeach; ?>
@@ -138,7 +138,7 @@ $applicantStages = $applicantStagesQuery->fetch(PDO::FETCH_ASSOC);
                                 <div class="card-body">
                                     <?php if (count($deploymentEvents) > 0): ?>
                                         <?php foreach ($deploymentEvents as $event): ?>
-                                        <a href="view_deployment.php?id=<?= $event['id'] ?>" class="d-block mb-2">
+                                            <a href="view_application_details.php?application_id=<?= htmlspecialchars($event['id']) ?>" class="d-block mb-2">
                                             <?= $event['date'] ?> - <?= $event['type'] ?>
                                         </a>
                                         <?php endforeach; ?>
