@@ -69,6 +69,57 @@ function calculateScore($user, $jobPost, $answers) {
 <body>
 <div id="content">
     <div class="container mt-5">
+    <h1 class="mb-4">Job Pipeline</h1>
+    <div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Total Applicants</th>
+                <th>Applicants in Shortlist</th>
+                <th>Applicants in Screening</th>
+                <th>Applicants in Interview</th>
+                <th>Applicants Offered</th>
+                <th>Applicants Deployed</th>
+                <th>Applicants Rejected</th>
+                <th>Applicants Withdrawn</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($jobDetails as $job): ?>
+                <?php
+                // Fetch counts for each stage
+                $stageCountsQuery = $pdo->prepare("
+                    SELECT 
+                        COUNT(*) AS total_applicants,
+                        SUM(CASE WHEN status IN ('Screened', 'Pending') THEN 1 ELSE 0 END) AS screening_count,                        SUM(CASE WHEN status = 'Shortlisted' THEN 1 ELSE 0 END) AS shortlisted_count,
+                        SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending_count,
+                        SUM(CASE WHEN status = 'Interviewed' THEN 1 ELSE 0 END) AS interview_count,
+                        SUM(CASE WHEN status = 'Offered' THEN 1 ELSE 0 END) AS offered_count,
+                        SUM(CASE WHEN status = 'Hired' THEN 1 ELSE 0 END) AS deployed_count,
+                        SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) AS rejected_count,
+                        SUM(CASE WHEN status = 'Withdrawn' THEN 1 ELSE 0 END) AS withdrawn_count
+                    FROM job_applications
+                    WHERE job_post_id = :job_post_id
+                ");
+                $stageCountsQuery->execute(['job_post_id' => $job['job_post_id']]);
+                $stageCounts = $stageCountsQuery->fetch(PDO::FETCH_ASSOC);
+                ?>
+                <tr>
+                    <td><?= htmlspecialchars($job['job_title']) ?></td>
+                    <td><?= $stageCounts['total_applicants'] ?? 0 ?></td>
+                    <td><?= $stageCounts['shortlisted_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['screening_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['interview_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['offered_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['deployed_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['rejected_count'] ?? 0 ?></td>
+                    <td><?= $stageCounts['withdrawn_count'] ?? 0 ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
         <h1 class="mb-4">Job Applications</h1>
 
         <!-- Job Posts -->

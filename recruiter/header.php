@@ -4,7 +4,7 @@ require_once 'db.php'; // Include the database connection
 $login_id = $_SESSION['login_id']; // Get the logged-in user's ID
 
 // Fetch notifications for the logged-in user
-$query = $pdo->prepare("SELECT * FROM notifications WHERE user_id = :user_id ORDER BY created_at DESC");
+$query = $pdo->prepare("SELECT * FROM notifications WHERE user_id = :user_id ORDER BY created_at, is_read DESC");
 $query->execute(['user_id' => $login_id]);
 $notifications = $query->fetchAll(PDO::FETCH_ASSOC);
 
