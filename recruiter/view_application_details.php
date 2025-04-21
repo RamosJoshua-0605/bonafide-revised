@@ -56,6 +56,20 @@ $certifications_query = $pdo->prepare("
 $certifications_query->execute(['user_id' => $application['user_id']]);
 $certifications = $certifications_query->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch user education details
+$education_query = $pdo->prepare("
+    SELECT * FROM user_education WHERE user_id = :user_id
+");
+$education_query->execute(['user_id' => $application['user_id']]);
+$education = $education_query->fetch(PDO::FETCH_ASSOC);
+
+// Fetch user skills
+$skills_query = $pdo->prepare("
+    SELECT * FROM skills WHERE user_id = :user_id
+");
+$skills_query->execute(['user_id' => $application['user_id']]);
+$skills = $skills_query->fetchAll(PDO::FETCH_ASSOC);
+
 // Fetch questionnaire and answers
 $questionnaire_query = $pdo->prepare("
     SELECT qa.*, q.question_text, q.correct_answer, q.dealbreaker 
@@ -181,45 +195,86 @@ if ($application_id) {
         </div>
     </div>
 
-    <div class="card mb-4">
-    <div class="card-header">Job Requirements Checklist</div>
-    <div class="card-body">
-        <form id="requirements-form" method="post" action="save_requirements.php">
-            <input type="hidden" name="application_id" value="<?= htmlspecialchars($application['application_id']) ?>">
-
-            <?php foreach ($job_requirements as $req): ?>
-                <?php 
-                    $isChecked = in_array($req['requirement_name'], $checked_requirements);
-                ?>
-                <div class="form-check">
-                    <input 
-                        type="checkbox" 
-                        name="requirements[]" 
-                        value="<?= htmlspecialchars($req['requirement_name']) ?>" 
-                        class="form-check-input requirement-checkbox"
-                        <?= $isChecked ? 'checked' : '' ?>
-                        onchange="document.getElementById('requirements-form').submit();"
-                    >
-                    <label class="form-check-label"><?= htmlspecialchars($req['requirement_name']) ?></label>
-                </div>
-            <?php endforeach; ?>
-        </form>
-    </div>
-</div>
-
-
+    <!-- Education Details -->
+    <?php if ($education): ?>
+        <div class="card mb-4">
+            <div class="card-header">Education Details</div>
+            <div class="card-body">
+                <p><strong>Highest Educational Attainment:</strong> <?= htmlspecialchars($education['highest_educational_attainment']) ?></p>
+                <p><strong>Junior High School:</strong> <?= htmlspecialchars($education['junior_high_school']) ?></p>
+                <p><strong>Year Graduated Junior High School:</strong> <?= htmlspecialchars($education['year_graduated_junior_highschool']) ?></p>
+                <p><strong>Senior High School:</strong> <?= htmlspecialchars($education['senior_high_school']) ?></p>
+                <p><strong>Year Graduated Senior High School:</strong> <?= htmlspecialchars($education['year_graduated_senior_highschool']) ?></p>
+                <p><strong>College:</strong> <?= htmlspecialchars($education['college']) ?></p>
+                <p><strong>Year Graduated College:</strong> <?= htmlspecialchars($education['year_graduated_college']) ?></p>
+                <p><strong>Course/Program:</strong> <?= htmlspecialchars($education['course_program']) ?></p>
+                <p><strong>Postgraduate/Master's:</strong> <?= htmlspecialchars($education['postgrad_masters']) ?></p>
+                <p><strong>Year Graduated Postgraduate/Master's:</strong> <?= htmlspecialchars($education['year_graduated_postgrad_masters']) ?></p>
+                <p><strong>Other Details:
+                <?php if (!empty($education['other_details'])): ?>
+                    </strong> <?= htmlspecialchars($education['other_details']) ?></p>
+                <?php else: ?>
+                    <span class="text-muted">No other details provided</span>
+                <?php endif; ?>
+                <p><strong>Diploma:</strong> 
+                    <?php if (!empty($education['diploma'])): ?>
+                        <a href="../applicant/<?= htmlspecialchars($education['diploma']) ?>" target="_blank">View Diploma</a>
+                    <?php elseif ($education['no_diploma']): ?>
+                        <span class="text-muted">No diploma provided</span>
+                    <?php else: ?>
+                        <span class="text-muted">Not uploaded</span>
+                    <?php endif; ?>
+                </p>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="card mb-4">
+            <div class="card-header">Education Details</div>
+            <div class="card-body">
+                <p class="text-muted">No education details available for this applicant.</p>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Work Experience -->
     <?php if ($work_experiences): ?>
         <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#work-experience-section-<?= htmlspecialchars($application['application_id']) ?>" aria-expanded="false" aria-controls="work-experience-section-<?= htmlspecialchars($application['application_id']) ?>">
+                        Work Experience
+                    </button>
+                </h5>
+            </div>
+            <div id="work-experience-section-<?= htmlspecialchars($application['application_id']) ?>" class="collapse">
+                <div class="card-body">
+                    <?php 
+                    // Group work experiences by category
+                    $workExperiencesByCategory = [];
+                    foreach ($work_experiences as $experience) {
+                        $category = $experience['experience_category'] ?? 'Uncategorized';
+                        $workExperiencesByCategory[$category][] = $experience;
+                    }
+                    ?>
+
+                    <?php foreach ($workExperiencesByCategory as $category => $experiences): ?>
+                        <h5 class="mt-3"><?= htmlspecialchars($category) ?></h5>
+                        <hr>
+                        <?php foreach ($experiences as $experience): ?>
+                            <p><strong>Company:</strong> <?= htmlspecialchars($experience['company_name']) ?></p>
+                            <p><strong>Role:</strong> <?= htmlspecialchars($experience['role']) ?></p>
+                            <p><strong>Years Worked:</strong> <?= htmlspecialchars($experience['years_worked']) ?></p>
+                            <hr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="card mb-4">
             <div class="card-header">Work Experience</div>
             <div class="card-body">
-                <?php foreach ($work_experiences as $experience): ?>
-                    <p><strong>Company:</strong> <?= htmlspecialchars($experience['company_name']) ?></p>
-                    <p><strong>Role:</strong> <?= htmlspecialchars($experience['role']) ?></p>
-                    <p><strong>Years Worked:</strong> <?= htmlspecialchars($experience['years_worked']) ?></p>
-                    <hr>
-                <?php endforeach; ?>
+                <p class="text-muted">No work experience available for this applicant.</p>
             </div>
         </div>
     <?php endif; ?>
@@ -227,14 +282,99 @@ if ($application_id) {
     <!-- Certifications -->
     <?php if ($certifications): ?>
         <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#certifications-section-<?= htmlspecialchars($application['application_id']) ?>" aria-expanded="false" aria-controls="certifications-section-<?= htmlspecialchars($application['application_id']) ?>">
+                        Certifications
+                    </button>
+                </h5>
+            </div>
+            <div id="certifications-section-<?= htmlspecialchars($application['application_id']) ?>" class="collapse">
+                <div class="card-body">
+                    <?php 
+                    // Group certifications by category
+                    $certifications_by_category = [];
+                    foreach ($certifications as $certification) {
+                        $category = $certification['certification_category'] ?? 'Uncategorized';
+                        $certifications_by_category[$category][] = $certification;
+                    }
+                    ?>
+
+                    <?php foreach ($certifications_by_category as $category => $certs): ?>
+                        <h5 class="mt-3"><?= htmlspecialchars($category) ?></h5>
+                        <hr>
+                        <?php foreach ($certs as $certification): ?>
+                            <p><strong>Certification Name:</strong> <?= htmlspecialchars($certification['certification_name']) ?></p>
+                            <p><strong>Institute:</strong> <?= htmlspecialchars($certification['certification_institute']) ?></p>
+                            <p><strong>Year Taken:</strong> <?= htmlspecialchars($certification['year_taken_certification']) ?></p>
+                            <p><strong>Certificate:</strong> 
+                                <?php if (!empty($certification['certificate_image_path'])): ?>
+                                    <a href="../applicant/<?= htmlspecialchars($certification['certificate_image_path']) ?>" target="_blank">View Certificate</a>
+                                <?php else: ?>
+                                    <span class="text-muted">Not uploaded</span>
+                                <?php endif; ?>
+                            </p>
+                            <hr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="card mb-4">
             <div class="card-header">Certifications</div>
             <div class="card-body">
-                <?php foreach ($certifications as $certification): ?>
-                    <p><strong>Certification Name:</strong> <?= htmlspecialchars($certification['certification_name']) ?></p>
-                    <p><strong>Institute:</strong> <?= htmlspecialchars($certification['certification_institute']) ?></p>
-                    <p><strong>Year Taken:</strong> <?= htmlspecialchars($certification['year_taken_certification']) ?></p>
-                    <hr>
-                <?php endforeach; ?>
+                <p class="text-muted">No certifications available for this applicant.</p>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Skills -->
+    <?php if ($skills): ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#skills-section-<?= htmlspecialchars($application['application_id']) ?>" aria-expanded="false" aria-controls="skills-section-<?= htmlspecialchars($application['application_id']) ?>">
+                        Skills
+                    </button>
+                </h5>
+            </div>
+            <div id="skills-section-<?= htmlspecialchars($application['application_id']) ?>" class="collapse">
+                <div class="card-body">
+                    <?php 
+                    // Group skills by category
+                    $skillsByCategory = [];
+                    foreach ($skills as $skill) {
+                        $category = $skill['skill_category'] ?? 'Uncategorized';
+                        $skillsByCategory[$category][] = $skill;
+                    }
+                    ?>
+
+                    <?php foreach ($skillsByCategory as $category => $skillsList): ?>
+                        <h5 class="mt-3"><?= htmlspecialchars($category) ?></h5>
+                        <hr>
+                        <?php foreach ($skillsList as $skill): ?>
+                            <p><strong>Skill Name:</strong> <?= htmlspecialchars($skill['skill_name']) ?></p>
+                            <p><strong>Proficiency Level:</strong> <?= htmlspecialchars($skill['proficiency_level']) ?></p>
+                            <hr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#skills-section-<?= htmlspecialchars($application['application_id']) ?>" aria-expanded="false" aria-controls="skills-section-<?= htmlspecialchars($application['application_id']) ?>">
+                        Skills
+                    </button>
+                </h5>
+            </div>
+            <div id="skills-section-<?= htmlspecialchars($application['application_id']) ?>" class="collapse">
+                <div class="card-body">
+                    <p class="text-muted">No skills available for this applicant.</p>
+                </div>
             </div>
         </div>
     <?php endif; ?>
@@ -274,6 +414,36 @@ if ($application_id) {
         </div>
     </div>
     
+    <div class="card mb-4">
+    <div class="card-header">Job Requirements Checklist</div>
+    <div class="card-body">
+        <?php if (!empty($job_requirements)): ?>
+            <form id="requirements-form" method="post" action="save_requirements.php">
+                <input type="hidden" name="application_id" value="<?= htmlspecialchars($application['application_id']) ?>">
+
+                <?php foreach ($job_requirements as $req): ?>
+                    <?php 
+                        $isChecked = in_array($req['requirement_name'], $checked_requirements);
+                    ?>
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            name="requirements[]" 
+                            value="<?= htmlspecialchars($req['requirement_name']) ?>" 
+                            class="form-check-input requirement-checkbox"
+                            <?= $isChecked ? 'checked' : '' ?>
+                            onchange="document.getElementById('requirements-form').submit();"
+                        >
+                        <label class="form-check-label"><?= htmlspecialchars($req['requirement_name']) ?></label>
+                    </div>
+                <?php endforeach; ?>
+            </form>
+        <?php else: ?>
+            <p class="text-muted">There are no documentary requirements for this job post.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
     <!-- Process Application -->
 <div class="card mb-4">
     
@@ -476,6 +646,9 @@ if ($application_id) {
         }
     });
 </script>
+
+<!-- Bootstrap Bundle with Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </div>
 </body>

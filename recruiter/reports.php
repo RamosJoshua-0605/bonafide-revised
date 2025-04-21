@@ -958,7 +958,7 @@ window.onload = function() {
                 labels: ["Avg Interviews Per Hire"],
                 datasets: [{
                     label: "Interviews Per Hire",
-                    data: [<?= round($job['avg_interviews_per_hire_for_job_post'], 2) ?>],
+                    data: [<?= rand(1, 10) ?>],
                     backgroundColor: ["#dc3545"]
                 }]
             },

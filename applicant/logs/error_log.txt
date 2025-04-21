@@ -74,3 +74,78 @@
     [login_id] => 17
 )
 
+[21-Apr-2025 04:21:18 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 9
+)
+
+[21-Apr-2025 07:27:55 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 11
+)
+
+[21-Apr-2025 09:56:40 Europe/Berlin] POST Data: Array
+(
+    [step] => 2
+    [facebook_messenger_link] => https://pinnacle.pnc.edu.ph/student/login
+    [cellphone_number] => 9065978961
+    [first_name] => JOshua
+    [last_name] => Ramos
+    [middle_name] => Modeloso
+    [nickname] => Josh
+    [age] => 22
+    [sex] => Male
+    [region] => 08
+    [region_text] => Region VIII (Eastern Visayas)
+    [province] => 0837
+    [province_text] => Leyte
+    [city] => 083717
+    [city_text] => Dagami
+    [barangay] => 083717013
+    [barangay_text] => Calipayan
+    [street_text] => 
+    [birthplace] => Cabuyao
+    [birthday] => 2002-12-09
+    [height_ft] => 5
+    [height_in] => 9
+    [marital_status] => Divorced
+    [has_tattoo] => Yes
+    [covid_vaccination_status] => Vaccinated
+    [religion] => Christian
+)
+
+[21-Apr-2025 11:58:15 Europe/Berlin] Session Data: Array
+(
+    [login_id] => 12
+)
+
+[21-Apr-2025 11:59:27 Europe/Berlin] POST Data: Array
+(
+    [step] => 2
+    [facebook_messenger_link] => https://www.facebook.com/
+    [cellphone_number] => 9065978961
+    [first_name] => Joshua
+    [last_name] => Ramos
+    [middle_name] => Modeloso
+    [nickname] => Josh
+    [age] => 22
+    [sex] => Male
+    [region] => 05
+    [region_text] => Region V (Bicol Region)
+    [province] => 0516
+    [province_text] => Camarines Norte
+    [city] => 051608
+    [city_text] => Paracale
+    [barangay] => 051608010
+    [barangay_text] => Dancalan
+    [street_text] => 
+    [birthplace] => Cabuyao
+    [birthday] => 2002-12-09
+    [height_ft] => 5
+    [height_in] => 9
+    [marital_status] => Married
+    [has_tattoo] => Yes
+    [covid_vaccination_status] => Vaccinated
+    [religion] => Christian
+)
+

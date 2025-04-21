@@ -18,9 +18,11 @@ $jobDetailsQuery->execute();
 $jobDetails = $jobDetailsQuery->fetchAll(PDO::FETCH_ASSOC);
 
 // Function to fetch paginated applications
-function getApplications($pdo, $jobPostId, $page, $itemsPerPage) {
+function getApplications($pdo, $jobPostId, $page, $itemsPerPage, $filter = '') {
     $offset = ($page - 1) * $itemsPerPage;
-    $applicationsQuery = $pdo->prepare("
+
+    // Modify the query to include the filter
+    $query = "
         SELECT ja.application_id, ja.job_post_id, ja.user_id, ja.status, ja.work_experience, ja.applied_at, ja.screened_at, ja.interviewed_at, ja.offered_at, ja.deployed_at, ja.rejected_at, ja.withdrawn_at, ja.comments,
                u.first_name, u.last_name, u.age, u.email_address, u.facebook_messenger_link, u.cellphone_number,
                u.id_picture_reference, u.address, u.birthday, u.sex, u.height_ft, u.marital_status, u.religion,
@@ -29,12 +31,23 @@ function getApplications($pdo, $jobPostId, $page, $itemsPerPage) {
         JOIN users u ON ja.user_id = u.user_id
         LEFT JOIN user_education je ON u.user_id = je.user_id
         WHERE ja.job_post_id = :job_post_id
-        LIMIT :itemsPerPage OFFSET :offset
-    ");
+    ";
+
+    if (!empty($filter)) {
+        $query .= " AND ja.status = :filter"; // Add filter condition
+    }
+
+    $query .= " LIMIT :itemsPerPage OFFSET :offset";
+
+    $applicationsQuery = $pdo->prepare($query);
     $applicationsQuery->bindValue('job_post_id', $jobPostId, PDO::PARAM_INT);
+    if (!empty($filter)) {
+        $applicationsQuery->bindValue('filter', $filter, PDO::PARAM_STR);
+    }
     $applicationsQuery->bindValue('itemsPerPage', $itemsPerPage, PDO::PARAM_INT);
     $applicationsQuery->bindValue('offset', $offset, PDO::PARAM_INT);
     $applicationsQuery->execute();
+
     return $applicationsQuery->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -134,6 +147,20 @@ function calculateScore($user, $jobPost, $answers) {
                 </div>
                 <div id="job-<?= $job['job_post_id'] ?>" class="collapse">
                     <div class="card-body">
+                        <div class="mb-3">
+                            <label for="filter-status-<?= $job['job_post_id'] ?>" class="form-label">Filter by Status</label>
+                            <select id="filter-status-<?= $job['job_post_id'] ?>" class="form-select filter-status" data-job-id="<?= $job['job_post_id'] ?>">
+                                <option value="" selected>All</option>
+                                <option value="Shortlisted">Shortlisted</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Screened">Screened</option>
+                                <option value="Interviewed">Interviewed</option>
+                                <option value="Offered">Offered</option>
+                                <option value="Hired">Hired</option>
+                                <option value="Withdrawn">Withdrawn</option>
+                            </select>
+                        </div>
                         <div id="applications-container-<?= $job['job_post_id'] ?>"></div>
                         <div id="pagination-container-<?= $job['job_post_id'] ?>" class="pagination-container mt-3"></div>
                     </div>
@@ -146,10 +173,16 @@ function calculateScore($user, $jobPost, $answers) {
 <script>
 $(document).ready(function () {
     function loadApplications(jobPostId, page) {
+        const selectedFilter = $(`#filter-status-${jobPostId}`).val(); // Get the selected filter for the specific job post
+
         $.ajax({
             url: 'fetch_applications.php',
             method: 'GET',
-            data: { job_post_id: jobPostId, page: page },
+            data: { 
+                job_post_id: jobPostId, 
+                page: page, 
+                filter: selectedFilter // Pass the filter to the server
+            },
             success: function (response) {
                 try {
                     const data = JSON.parse(response);
@@ -226,6 +259,13 @@ $(document).ready(function () {
     <?php foreach ($jobDetails as $job): ?>
     loadApplications(<?= $job['job_post_id'] ?>, 1);
     <?php endforeach; ?>
+
+    // Event listener for filter change
+    $(document).on('change', '.filter-status', function () {
+        const jobPostId = $(this).data('job-id'); // Get the job post ID from the dropdown
+        const page = 1; // Reset to the first page when the filter changes
+        loadApplications(jobPostId, page);
+    });
 
      // Event listener for expanding/collapsing job details
      $(document).on('click', '[data-bs-toggle="collapse"]', function () {

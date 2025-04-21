@@ -25,6 +25,12 @@
                 <i class="bi bi-file-earmark-text fs-4 icon"></i> <span class="menu-text ms-2">Applications</span>
             </a>
         </li>
+         <!-- Applicant Tracking -->
+         <li>
+         <a href="applicant_tracking.php" class="nav-link text-dark py-3 border-bottom collapsed-tooltip" data-bs-toggle="tooltip" data-bs-placement="right" title="Applicant Tracking">
+            <i class="bi bi-people-fill fs-4 icon"></i> <span class="menu-text ms-2">Applicant Tracking</span>
+        </a>
+        </li>
         <!-- User Management -->
         <li>
             <a href="user_management.php" class="nav-link text-dark py-3 border-bottom collapsed-tooltip" data-bs-toggle="tooltip" data-bs-placement="right" title="User Management">

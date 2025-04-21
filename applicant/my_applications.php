@@ -21,7 +21,7 @@ $query = $pdo->prepare("
         ja.status,
         ja.applied_at,
         jp.job_title,
-        jp.partner_company,
+        jp.partner_company, 
         jp.location,
         jp.min_salary,
         jp.max_salary
@@ -130,7 +130,7 @@ foreach ($applications as $app) {
                                                 </p>
 
                                                 <!-- Show relevant details for each stage -->
-                                                <?php if ($status === 'Interviewed'): ?>
+                                                <!-- <?php if ($status === 'Interviewed'): ?>
                                                     <p><strong>Interview:</strong> Scheduled on <?= date("M d, Y", strtotime($app['interview_date'])) ?> (<?= htmlspecialchars($app['meeting_type']) ?>)</p>
                                                 <?php elseif ($status === 'Offered'): ?>
                                                     <p><strong>Offer:</strong> ₱<?= htmlspecialchars($app['offered_salary']) ?> (Start: <?= date("M d, Y", strtotime($app['offer_start_date'])) ?>)</p>
@@ -138,7 +138,7 @@ foreach ($applications as $app) {
                                                     <p><strong>Deployment:</strong> <?= date("M d, Y", strtotime($app['deployment_date'])) ?></p>
                                                 <?php elseif ($status === 'Rejected' || $status === 'Withdrawn'): ?>
                                                     <p class="text-danger"><strong>Status:</strong> <?= $status ?></p>
-                                                <?php endif; ?>
+                                                <?php endif; ?> -->
 
                                                 <a href="application_details.php?application_id=<?= $app['application_id'] ?>" class="btn btn-primary btn-sm">View Details</a>
                                             </div>

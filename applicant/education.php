@@ -27,6 +27,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postgrad_masters = $_POST['postgrad_masters'] ?? null;
     $year_graduated_postgrad_masters = $_POST['year_graduated_postgrad_masters'] ?? null;
     $other_details = $_POST['other_details'] ?? null; // Define this variable to prevent the error.
+    $diploma_file = $_FILES['diploma_file'] ?? null;
+    $no_diploma = isset($_POST['no_diploma']) ? 1 : 0;
+
+    $diploma_path = null;
+    if (!$no_diploma && isset($diploma_file['tmp_name']) && is_uploaded_file($diploma_file['tmp_name'])) {
+        // Check for upload errors
+        if ($diploma_file['error'] !== UPLOAD_ERR_OK) {
+            $errors['diploma'] = "File upload error: " . $diploma_file['error'];
+        } else {
+            // Set the upload directory
+            $upload_dir = __DIR__ . '/uploads/diplomas/';
+            $file_name = uniqid() . '_' . basename($diploma_file['name']);
+            $diploma_path = $upload_dir . $file_name;
+
+            // Ensure the upload directory exists
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            // Move the uploaded file to the target directory
+            if (!move_uploaded_file($diploma_file['tmp_name'], $diploma_path)) {
+                $errors['diploma'] = "Failed to upload diploma.";
+            } else {
+                // Save the relative path for database storage
+                $diploma_path = 'uploads/diplomas/' . $file_name;
+            }
+        }
+    }
 
     // Form validation
     if (empty($highest_educational_attainment)) {
@@ -94,11 +122,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 INSERT INTO user_education (
                     user_id, highest_educational_attainment, junior_high_school, year_graduated_junior_highschool,
                     senior_high_school, year_graduated_senior_highschool, college, year_graduated_college,
-                    course_program, postgrad_masters, year_graduated_postgrad_masters, other_details
+                    course_program, postgrad_masters, year_graduated_postgrad_masters, other_details,
+                    diploma, no_diploma
                 ) VALUES (
                     :user_id, :highest_educational_attainment, :junior_high_school, :year_graduated_junior_highschool,
                     :senior_high_school, :year_graduated_senior_highschool, :college, :year_graduated_college,
-                    :course_program, :postgrad_masters, :year_graduated_postgrad_masters, :other_details
+                    :course_program, :postgrad_masters, :year_graduated_postgrad_masters, :other_details,
+                    :diploma, :no_diploma
                 )
             ");
 
@@ -115,6 +145,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':postgrad_masters' => $postgrad_masters,
                 ':year_graduated_postgrad_masters' => $year_graduated_postgrad_masters,
                 ':other_details' => $other_details,
+                ':diploma' => $diploma_path,
+                ':no_diploma' => $no_diploma,
             ]);
 
             $success_message = "Educational information saved successfully!";
@@ -142,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if (isset($success_message)): ?>
         <div class="alert alert-success"><?php echo $success_message; ?></div>
     <?php endif; ?>
-    <form method="POST" id="educationForm">
+    <form method="POST" id="educationForm" enctype="multipart/form-data">
         <!-- Highest Educational Attainment -->
         <div class="mb-3">
             <label for="highest_educational_attainment" class="form-label">Highest Educational Attainment</label>
@@ -201,6 +233,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea class="form-control" name="other_details" rows="3" placeholder="Specify if homeschooled or not formally schooled"></textarea>
                 <small class="text-danger" id="other_error"></small>
             </div>
+        </div>
+
+        <!-- Upload Diploma -->
+        <div class="mb-3">
+            <label for="diploma_file" class="form-label">Upload Diploma (Optional)</label>
+            <input type="file" class="form-control" id="diploma_file" name="diploma_file" accept=".jpg,.jpeg,.png,.pdf">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="no_diploma" name="no_diploma" value="1">
+                <label class="form-check-label" for="no_diploma">
+                    I do not have a diploma
+                </label>
+            </div>
+            <small class="text-danger" id="diploma_error"></small>
         </div>
 
         <!-- Submit Button -->
@@ -285,6 +330,14 @@ $(document).ready(function () {
                 isValid = false;
             }
             validateYear('input[name="year_graduated_senior_highschool"]', '#senior_high_error', 'Year Graduated');
+        }
+
+        // Validate diploma upload or checkbox
+        const diplomaFile = $('#diploma_file').val();
+        const noDiplomaChecked = $('#no_diploma').is(':checked');
+        if (!diplomaFile && !noDiplomaChecked) {
+            $('#diploma_error').text('Please upload your diploma or check the "I do not have a diploma" box.');
+            isValid = false;
         }
 
         if (!isValid) e.preventDefault();

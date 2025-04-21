@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
+        if ($user && $password === $user['password_hash']) { // Direct comparison for plain text passwords
             // Check if the account is inactive
             if ($user['status'] === 'Inactive') {
                 header("Location: resend_verify.php"); // Redirect to account verification page
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header("Location: dashboard.php"); // Redirect to dashboard
                     exit;
                 }
-            } 
+            }
         } else {
             $errors['login'] = "Invalid email or password.";
         }

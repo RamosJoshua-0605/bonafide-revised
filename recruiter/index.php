@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
+        // if ($user && password_verify($password, $user['password_hash'])) {
+        if ($user && $password === $user['password_hash']) { // Direct comparison for plain text passwords
             // Check if the account is inactive
             if ($user['status'] === 'Inactive') {
                 $errors['login'] = "Please contact an admin to activate your account.";

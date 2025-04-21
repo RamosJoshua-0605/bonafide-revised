@@ -22,9 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $company_names = $_POST['company_name'] ?? [];
     $roles = $_POST['role'] ?? [];
     $years_worked = $_POST['years_worked'] ?? [];
+    $experience_categories = $_POST['experience_category'] ?? [];
 
     // Validate inputs
-    if (empty($company_names) || empty($roles) || empty($years_worked)) {
+    if (empty($company_names) || empty($roles) || empty($years_worked) || empty($experience_categories)) {
         $errors[] = "All fields are required. Please fill out the form completely.";
     }
 
@@ -36,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Prepare the SQL statement
             $stmt = $pdo->prepare("
                 INSERT INTO user_work_experience (
-                    user_id, company_name, role, years_worked
+                    user_id, company_name, role, years_worked, experience_category
                 ) VALUES (
-                    :user_id, :company_name, :role, :years_worked
+                    :user_id, :company_name, :role, :years_worked, :experience_category
                 )
             ");
 
@@ -49,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':company_name' => $company_names[$i],
                     ':role' => $roles[$i],
                     ':years_worked' => $years_worked[$i],
+                    ':experience_category' => $experience_categories[$i],
                 ]);
             }
 
@@ -102,6 +104,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="number" class="form-control" name="years_worked[]" min="0" max="50" required>
                         <div class="invalid-feedback">Please enter a valid number of years worked.</div>
                     </div>
+                    <div class="mb-3">
+                        <label for="experience_category[]" class="form-label">Experience Category</label>
+                        <select class="form-select" name="experience_category[]" required>
+                            <option value="" disabled selected>Select an industry</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Arts, Media, and Entertainment">Arts, Media, and Entertainment</option>
+                            <option value="Building and Construction">Building and Construction</option>
+                            <option value="Business and Finance">Business and Finance</option>
+                            <option value="Education">Education</option>
+                            <option value="Engineering and Architecture">Engineering and Architecture</option>
+                            <option value="Fashion and Interior Design">Fashion and Interior Design</option>
+                            <option value="Health Science and Medical Technology">Health Science and Medical Technology</option>
+                            <option value="Hospitality">Hospitality</option>
+                            <option value="Manufacturing and Product Development">Manufacturing and Product Development</option>
+                            <option value="Marketing, Sales, and Services">Marketing, Sales, and Services</option>
+                            <option value="Public Services">Public Services</option>
+                            <option value="Transportation">Transportation</option>
+                        </select>
+                        <div class="invalid-feedback">Experience category is required.</div>
+                    </div>
                     <hr>
                 </div>
             </div>
@@ -143,6 +165,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 <input type="number" class="form-control" name="years_worked[]" min="0" max="50" required>
                 <div class="invalid-feedback">Please enter a valid number of years worked.</div>
             </div>
+            <div class="mb-3">
+                <label for="experience_category[]" class="form-label">Experience Category</label>
+                <select class="form-select" name="experience_category[]" required>
+                    <option value="" disabled selected>Select an industry</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Arts, Media, and Entertainment">Arts, Media, and Entertainment</option>
+                    <option value="Building and Construction">Building and Construction</option>
+                    <option value="Business and Finance">Business and Finance</option>
+                    <option value="Education">Education</option>
+                    <option value="Engineering and Architecture">Engineering and Architecture</option>
+                    <option value="Fashion and Interior Design">Fashion and Interior Design</option>
+                    <option value="Health Science and Medical Technology">Health Science and Medical Technology</option>
+                    <option value="Hospitality">Hospitality</option>
+                    <option value="Manufacturing and Product Development">Manufacturing and Product Development</option>
+                    <option value="Marketing, Sales, and Services">Marketing, Sales, and Services</option>
+                    <option value="Public Services">Public Services</option>
+                    <option value="Transportation">Transportation</option>
+                </select>
+                <div class="invalid-feedback">Experience category is required.</div>
+            </div>
             <button type="button" class="btn btn-danger removeExperience">Remove Work Experience</button>
             <hr>
         `;
@@ -171,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Validate each input field in all groups
         experienceGroups.forEach(group => {
-            const inputs = group.querySelectorAll("input");
+            const inputs = group.querySelectorAll("input, select");
             inputs.forEach(input => {
                 if (!input.value.trim()) {
                     input.classList.add("is-invalid");

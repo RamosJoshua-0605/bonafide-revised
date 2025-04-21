@@ -75,10 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $password_hash = password_hash($password, PASSWORD_BCRYPT);
             $last_login = date('Y-m-d H:i:s');
 
-            $stmt = $pdo->prepare("INSERT INTO user_logins (email, password_hash, verification_token, role, status, last_login) VALUES (?, ?, ?, 'Applicant', 'Inactive', ?)");
+            $stmt = $pdo->prepare("INSERT INTO user_logins (email, password_hash, verification_token, role, status, last_login) VALUES (?, ?, ?, 'Applicant', 'Active', ?)");
             $stmt->execute([$email, $password_hash, $verification_token, $last_login]);
             $referred_user_id = $pdo->lastInsertId();
 
+            $_SESSION['login_id'] = $referred_user_id;
+            
             // Handle referrals if the referral code was valid
             if (!empty($referral_code) && isset($referrer_id)) {
                 $pdo->prepare("
@@ -87,41 +89,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ")->execute([$referrer_id, $referred_user_id, $referrer_role]);
             }
 
-            if (sendVerificationEmail($email, $verification_token)) {
-                $_SESSION['success'] = "Registration successful! Please check your email to verify your account.";
-                $_SESSION['verification_email'] = $email; // Store email for resending verification
-                header("Location: registration.php");
-                exit;
-            } else {
-                $errors['email'] = "Email could not be sent. Please try again later.";
-            }
+            // if (sendVerificationEmail($email, $verification_token)) {
+            //     $_SESSION['success'] = "Registration successful! Please check your email to verify your account.";
+            //     $_SESSION['verification_email'] = $email; // Store email for resending verification
+            //     header("Location: registration.php");
+            //     exit;
+            // } else {
+            //     $errors['email'] = "Email could not be sent. Please try again later.";
+            // }
         }
     }
+
+    header("Location: dashboard.php");
 }
 
-if (isset($_GET['resend_verification']) && isset($_SESSION['verification_email'])) {
-    $email = $_SESSION['verification_email'];
+// if (isset($_GET['resend_verification']) && isset($_SESSION['verification_email'])) {
+//     $email = $_SESSION['verification_email'];
 
-    // Generate a new verification token
-    $new_verification_token = bin2hex(random_bytes(16));
+//     // Generate a new verification token
+//     $new_verification_token = bin2hex(random_bytes(16));
 
-    // Update the database with the new token
-    $update_stmt = $pdo->prepare("UPDATE user_logins SET verification_token = ? WHERE email = ?");
-    $update_stmt->execute([$new_verification_token, $email]);
+//     // Update the database with the new token
+//     $update_stmt = $pdo->prepare("UPDATE user_logins SET verification_token = ? WHERE email = ?");
+//     $update_stmt->execute([$new_verification_token, $email]);
 
-    if ($update_stmt->rowCount() > 0) {
-        // Send the new verification email
-        if (sendVerificationEmail($email, $new_verification_token)) {
-            $_SESSION['success'] = "Verification email resent successfully.";
-            header("Location: registration.php");
-            exit;
-        } else {
-            $_SESSION['error'] = "Failed to send verification email. Please try again later.";
-        }
-    } else {
-        $_SESSION['error'] = "Failed to generate a new verification token.";
-    }
-}
+//     if ($update_stmt->rowCount() > 0) {
+//         // Send the new verification email
+//         if (sendVerificationEmail($email, $new_verification_token)) {
+//             $_SESSION['success'] = "Verification email resent successfully.";
+//             header("Location: registration.php");
+//             exit;
+//         } else {
+//             $_SESSION['error'] = "Failed to send verification email. Please try again later.";
+//         }
+//     } else {
+//         $_SESSION['error'] = "Failed to generate a new verification token.";
+//     }
+// }
 ?>
 
 <!DOCTYPE html>

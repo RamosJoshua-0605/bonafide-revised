@@ -6,17 +6,23 @@ require 'auth.php';
 $jobPostId = isset($_GET['job_post_id']) ? (int)$_GET['job_post_id'] : 0;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $itemsPerPage = 5;
+$filter = isset($_GET['filter']) ? $_GET['filter'] : ''; // Get the filter from the request
 
 if ($jobPostId > 0 && $page > 0) {
     $offset = ($page - 1) * $itemsPerPage;
 
-    // Fetch the total number of applications for the job post
+    // Fetch the total number of applications for the job post with the filter applied
     $totalApplicationsQuery = $pdo->prepare("
         SELECT COUNT(*) AS total
         FROM job_applications
         WHERE job_post_id = :job_post_id
+        " . (!empty($filter) ? "AND status = :filter" : "") . "
     ");
-    $totalApplicationsQuery->execute(['job_post_id' => $jobPostId]);
+    $totalApplicationsQuery->bindValue(':job_post_id', $jobPostId, PDO::PARAM_INT);
+    if (!empty($filter)) {
+        $totalApplicationsQuery->bindValue(':filter', $filter, PDO::PARAM_STR);
+    }
+    $totalApplicationsQuery->execute();
     $totalApplications = $totalApplicationsQuery->fetch(PDO::FETCH_ASSOC)['total'];
 
     // Calculate total pages
@@ -35,7 +41,7 @@ if ($jobPostId > 0 && $page > 0) {
                     && !empty($jobPost['preferred_work_experience']) 
                     && !empty($jobPost['preferred_educational_level']);
 
-    // Fetch paginated applications
+    // Fetch paginated applications with the filter applied
     $applicationsQuery = $pdo->prepare("
         SELECT ja.application_id, ja.job_post_id, ja.user_id, ja.comments, ja.status, ja.work_experience, ja.applied_at, 
                u.first_name, u.last_name, u.age, u.email_address, u.cellphone_number, u.address,
@@ -44,11 +50,15 @@ if ($jobPostId > 0 && $page > 0) {
         JOIN users u ON ja.user_id = u.user_id
         LEFT JOIN user_education je ON u.user_id = je.user_id
         WHERE ja.job_post_id = :job_post_id
+        " . (!empty($filter) ? "AND ja.status = :filter" : "") . "
         LIMIT :itemsPerPage OFFSET :offset
     ");
-    $applicationsQuery->bindValue('job_post_id', $jobPostId, PDO::PARAM_INT);
-    $applicationsQuery->bindValue('itemsPerPage', $itemsPerPage, PDO::PARAM_INT);
-    $applicationsQuery->bindValue('offset', $offset, PDO::PARAM_INT);
+    $applicationsQuery->bindValue(':job_post_id', $jobPostId, PDO::PARAM_INT);
+    if (!empty($filter)) {
+        $applicationsQuery->bindValue(':filter', $filter, PDO::PARAM_STR);
+    }
+    $applicationsQuery->bindValue(':itemsPerPage', $itemsPerPage, PDO::PARAM_INT);
+    $applicationsQuery->bindValue(':offset', $offset, PDO::PARAM_INT);
     $applicationsQuery->execute();
     $applications = $applicationsQuery->fetchAll(PDO::FETCH_ASSOC);
 
