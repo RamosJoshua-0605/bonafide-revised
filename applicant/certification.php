@@ -118,7 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div id='content'>
     <div class="container mt-5">
         <h2>Add Certifications</h2>
-        <form id="certificationForm" action="" method="POST" enctype="multipart/form-data">        <div id="certificationsContainer">
+        <form id="certificationForm" action="" method="POST" enctype="multipart/form-data">        
+            <div id="certificationsContainer">
     <div class="certification-group">
         <div class="mb-3">
             <label for="certification_name[]" class="form-label">Certification Name</label>

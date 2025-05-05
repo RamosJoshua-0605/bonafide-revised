@@ -3,9 +3,11 @@ ob_start();
 require 'db.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
 require '../vendor/autoload.php';
 
-function sendVerificationEmail($email, $verification_token) {
+function sendVerificationEmail($email, $verification_token)
+{
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -89,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ")->execute([$referrer_id, $referred_user_id, $referrer_role]);
             }
 
+            // disabled for testing purposes
             // if (sendVerificationEmail($email, $verification_token)) {
             //     $_SESSION['success'] = "Registration successful! Please check your email to verify your account.";
             //     $_SESSION['verification_email'] = $email; // Store email for resending verification
@@ -103,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: dashboard.php");
 }
 
+// disabled for testing purposes
 // if (isset($_GET['resend_verification']) && isset($_SESSION['verification_email'])) {
 //     $email = $_SESSION['verification_email'];
 
@@ -130,78 +134,91 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+        rel="stylesheet">
 </head>
-<body>
-<div class="container mt-5">
-    <h2>Register</h2>
-    <?php if (!empty($_SESSION['success'])): ?>
-        <div class="alert alert-success">
-            <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
-            <p>Didn't receive an email? <a href="?resend_verification=true" class="btn btn-link">Resend Verification Email</a></p>
-        </div>
-    <?php endif; ?>
-    <form method="POST" action="">
-        <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES); ?>" required>
-            <small class="text-danger"><?php echo $errors['email'] ?? ''; ?></small>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <div class="input-group">
-                <input type="password" class="form-control" id="password" name="password" required>
-                <button type="button" class="btn btn-outline-secondary" id="togglePassword">
-                    <i class="bi bi-eye" id="toggleIconPassword"></i>
-                </button>
-            </div>
-            <small class="text-danger"><?php echo $errors['password'] ?? ''; ?></small>
-        </div>
-        <div class="mb-3">
-            <label for="confirm_password" class="form-label">Confirm Password</label>
-            <div class="input-group">
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                <button type="button" class="btn btn-outline-secondary" id="toggleConfirmPassword">
-                    <i class="bi bi-eye" id="toggleIconConfirmPassword"></i>
-                </button>
-            </div>
-            <small class="text-danger"><?php echo $errors['confirm_password'] ?? ''; ?></small>
-        </div>
-        <div class="mb-3">
-            <label for="referral_code" class="form-label">Referral Code (optional)</label>
-            <input type="text" class="form-control" id="referral_code" name="referral_code" value="<?php echo htmlspecialchars($_POST['referral_code'] ?? '', ENT_QUOTES); ?>">
-            <small class="text-danger"><?php echo $errors['referral_code'] ?? ''; ?></small>
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    <div class="mt-3">
-        <p>Already have an account? <a href="index.php">Login here</a>.</p>
-    </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.getElementById('togglePassword').addEventListener('click', function () {
-        const passwordField = document.getElementById('password');
-        const toggleIcon = document.getElementById('toggleIconPassword');
-        const type = passwordField.type === 'password' ? 'text' : 'password';
-        passwordField.type = type;
-        toggleIcon.classList.toggle('bi-eye');
-        toggleIcon.classList.toggle('bi-eye-slash');
-    });
 
-    document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
-        const confirmPasswordField = document.getElementById('confirm_password');
-        const toggleIcon = document.getElementById('toggleIconConfirmPassword');
-        const type = confirmPasswordField.type === 'password' ? 'text' : 'password';
-        confirmPasswordField.type = type;
-        toggleIcon.classList.toggle('bi-eye');
-        toggleIcon.classList.toggle('bi-eye-slash');
-    });
-</script>
+<body>
+    <div class="container mt-5">
+        <h2>Register</h2>
+        <?php if (!empty($_SESSION['success'])): ?>
+        <div class="alert alert-success">
+            <?php echo $_SESSION['success'];
+            unset($_SESSION['success']); ?>
+            <p>Didn't receive an email? <a href="?resend_verification=true" class="btn btn-link">Resend Verification
+                    Email</a></p>
+        </div>
+        <?php endif; ?>
+        <form method="POST" action="">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email"
+                    value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES); ?>"
+                    required>
+                <small
+                    class="text-danger"><?php echo $errors['email'] ?? ''; ?></small>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                        <i class="bi bi-eye" id="toggleIconPassword"></i>
+                    </button>
+                </div>
+                <small
+                    class="text-danger"><?php echo $errors['password'] ?? ''; ?></small>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    <button type="button" class="btn btn-outline-secondary" id="toggleConfirmPassword">
+                        <i class="bi bi-eye" id="toggleIconConfirmPassword"></i>
+                    </button>
+                </div>
+                <small
+                    class="text-danger"><?php echo $errors['confirm_password'] ?? ''; ?></small>
+            </div>
+            <div class="mb-3">
+                <label for="referral_code" class="form-label">Referral Code (optional)</label>
+                <input type="text" class="form-control" id="referral_code" name="referral_code"
+                    value="<?php echo htmlspecialchars($_POST['referral_code'] ?? '', ENT_QUOTES); ?>">
+                <small
+                    class="text-danger"><?php echo $errors['referral_code'] ?? ''; ?></small>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+        <div class="mt-3">
+            <p>Already have an account? <a href="index.php">Login here</a>.</p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIconPassword');
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
+            toggleIcon.classList.toggle('bi-eye');
+            toggleIcon.classList.toggle('bi-eye-slash');
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const confirmPasswordField = document.getElementById('confirm_password');
+            const toggleIcon = document.getElementById('toggleIconConfirmPassword');
+            const type = confirmPasswordField.type === 'password' ? 'text' : 'password';
+            confirmPasswordField.type = type;
+            toggleIcon.classList.toggle('bi-eye');
+            toggleIcon.classList.toggle('bi-eye-slash');
+        });
+    </script>
 </body>
+
 </html>
